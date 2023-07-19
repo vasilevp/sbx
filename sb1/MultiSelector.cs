@@ -21,21 +21,20 @@ namespace sb1
 
         public bool Select(int subdivision)
         {
-            int divisor = 1;
-            foreach (var _ in selections)
+            selections.Add(subdivision);
+
+            int divisor = subdivisions;
+            int start = 0;
+            foreach (var subdiv in selections)
             {
+                start += subdiv * ((items.Count - 1) / divisor + 1);
                 divisor *= subdivisions;
             }
 
-            var curCount = (items.Count - 1) / divisor + 1;
+            if (start >= items.Count - 1) return false;
 
-            if (curCount <= subdivision + 1 || curCount <= subdivisions)
-            {
-                return false;
-            }
-
-            selections.Add(subdivision);
-            return true;
+            var curCount = (items.Count - 1) * subdivisions / divisor + 1;
+            return curCount > 1;
         }
 
         public void Unselect()
@@ -81,12 +80,12 @@ namespace sb1
 
         public IEnumerable<T> GetCurrentSubdivision()
         {
-            int divisor = 1;
+            int divisor = subdivisions;
             int start = 0;
             foreach (var subdiv in selections)
             {
-                divisor *= subdivisions;
                 start += subdiv * ((items.Count - 1) / divisor + 1);
+                divisor *= subdivisions;
             }
 
             return items.Skip(start).Take((items.Count - 1) / divisor + 1);

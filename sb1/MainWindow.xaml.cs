@@ -152,7 +152,7 @@ namespace sb1
                 {
                     throw new Exception($"subdivision longer than 9 ({subdiv.Count()})");
                 }
-                var result = subdiv.Skip(selection).FirstOrDefault();
+                var result = subdiv.FirstOrDefault();
                 fileSelector.Unselect();
                 DrawSelection();
 
