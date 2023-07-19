@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System;
 using System.Windows.Interop;
+using System.ComponentModel;
 
 namespace sb1
 {
@@ -64,7 +65,7 @@ namespace sb1
         [DllImport("user32.dll")]
         public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-        MultiSelector<FileInfo> fileSelector = new MultiSelector<FileInfo>(null, 9);
+        StableSelector<FileInfo> fileSelector = new StableSelector<FileInfo>(null, 9);
         WaveOutEvent audio = new WaveOutEvent();
 
         Overlay<FileInfo> overlay = new Overlay<FileInfo>();
@@ -76,7 +77,7 @@ namespace sb1
 
             public override string ToString()
             {
-                return Tag.Title ?? Path.GetFileName(Reader.FileName);
+                return Tag.Title ?? Path.GetFileNameWithoutExtension(Reader.FileName);
             }
         }
 
@@ -86,6 +87,10 @@ namespace sb1
 
             combobox1.ItemsSource = EnumerateDevices();
             this.KeyUp += MainWindow_KeyUp;
+
+
+            audio.PlaybackStopped += (o, e) =>
+            status.Content = "Ready";
 
             overlay.IsVisible = false;
         }
@@ -113,34 +118,61 @@ namespace sb1
             }
 
             var files = Directory.GetFiles(d.SelectedPath);
-            var audioFiles = new List<FileInfo>();
-            foreach (var f in files)
+
+            progress.Maximum = files.Count();
+            progress.Value = 0;
+            progress.Visibility = Visibility.Visible;
+
+            Task.Run(() =>
             {
-                try
+                var timer = new System.Diagnostics.Stopwatch();
+                timer.Start();
+
+                var audioFiles = new List<FileInfo>();
+                var failed = new List<string>();
+
+                var i = 0;
+                foreach (var f in files)
                 {
-                    var r = new AudioFileReader(f);
-                    var fi = new FileInfo();
-                    fi.Reader = r;
-                    fi.Tag = TagLib.File.Create(f).Tag;
-                    audioFiles.Add(fi);
+                    //Application.Current.Dispatcher.Invoke(() => status.Content = $"Loading {f}...");
+                    try
+                    {
+                        var r = new AudioFileReader(f);
+                        var fi = new FileInfo();
+                        fi.Reader = r;
+                        fi.Tag = TagLib.File.Create(f).Tag;
+                        audioFiles.Add(fi);
+                    }
+                    catch (Exception)
+                    {
+                        failed.Add(f);
+                    }
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        progress.Value = i++;
+                        status.Content = $"Loading {Path.GetFileName(f)}...";
+                    });
                 }
-                catch { }
-            }
 
-            fileSelector = new MultiSelector<FileInfo>(audioFiles, 9);
-            //MapFiles();
-            DrawSelection();
-        }
+                fileSelector = new StableSelector<FileInfo>(audioFiles, 9);
+                //MapFiles();
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    DrawSelection();
 
-        private void Load_Click(object sender, RoutedEventArgs e)
-        {
+                    status.Content = $"{audioFiles.Count} files loaded in {timer.Elapsed.TotalSeconds}s";
 
-        }
+                    if (failed.Count > 0)
+                    {
+                        var failedFiles = string.Join(",", failed.Select(f => Path.GetFileName(f)));
 
-        void MapFiles()
-        {
-            overlay.SetItems(fileSelector.GetSubdivisions());
-            DrawSelection();
+                        status.Content += $"; {failed.Count} files failed to load: {failedFiles}";
+                    }
+
+                    progress.Visibility = Visibility.Collapsed;
+                });
+            });
         }
 
         FileInfo? SelectSubset(int selection)
@@ -251,11 +283,14 @@ namespace sb1
                 result.Value.Reader.Seek(0, SeekOrigin.Begin);
                 audio.Stop();
                 audio.DeviceNumber = combobox1.SelectedIndex - 1;
-                audio.Init(result.Value.Reader);
+                audio.Init(result.Value.Reader, true);
                 audio.Play();
-                status.Content = $"Playing {result.ToString()}";
+                Application.Current.Dispatcher.InvokeAsync(() => status.Content = $"Playing {result.ToString()}");
             }
-            catch { }
+            catch (Exception e)
+            {
+                status.Content = $"Error: {e.Message}";
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

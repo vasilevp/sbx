@@ -11,7 +11,6 @@ namespace sb1
         private int subdivisions;
         private IList<T> items;
         private List<int> selections = new List<int>();
-        private IEnumerable<T> selection;
 
         public MultiSelector(IList<T> items, int subdivisions)
         {
@@ -42,7 +41,7 @@ namespace sb1
             selections.Clear();
         }
 
-        public List<IEnumerable<T>> GetSubdivisions()
+        public IEnumerable<IEnumerable<T>> GetSubdivisions()
         {
             var result = new List<IEnumerable<T>>();
             int divisor = subdivisions;

@@ -12,7 +12,7 @@ namespace sb1
     {
         GraphicsWindow window;
         Graphics gfx;
-        List<IEnumerable<T>> items = new List<IEnumerable<T>>();
+        IList<IEnumerable<T>> items = new List<IEnumerable<T>>();
         Dictionary<string, Font> fonts = new Dictionary<string, Font>();
         Dictionary<string, IBrush> brushes = new Dictionary<string, IBrush>();
         int fontSize = 14;
@@ -177,9 +177,9 @@ return to the top level.
             window.Join();
         }
 
-        public void SetItems(List<IEnumerable<T>> items)
+        public void SetItems(IEnumerable<IEnumerable<T>> items)
         {
-            this.items = items;
+            this.items = items.ToList();
         }
 
         public void SwitchFontSize()
