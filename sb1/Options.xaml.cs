@@ -22,6 +22,20 @@ namespace sb1
         public Options()
         {
             InitializeComponent();
+            cbCyrillicFix.IsChecked = MainWindow.cyrillicFix;
+            cbCyrillicFix.IsEnabled = MainWindow.useTags;
+            cbUseIDv3Tags.IsChecked = MainWindow.useTags;
+        }
+
+        private void cbUseIDv3Tags_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow.useTags = cbUseIDv3Tags.IsChecked.Value;
+            cbCyrillicFix.IsEnabled = MainWindow.useTags;
+        }
+
+        private void cbCyrillicFix_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow.cyrillicFix = cbCyrillicFix.IsChecked.Value;
         }
     }
 }

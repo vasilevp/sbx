@@ -5,8 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:sb1"
         mc:Ignorable="d"
-        Title="Options" Height="450" Width="800">
+        Title="Options" Height="189" Width="127">
     <Grid>
-        
+        <CheckBox x:Name="cbCyrillicFix" Content="Cyrillic fix" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.547,3.363" Click="cbCyrillicFix_Click"/>
+        <CheckBox x:Name="cbUseIDv3Tags" Content="Use IDv3 Tags" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="cbUseIDv3Tags_Click"/>
+
     </Grid>
 </Window>

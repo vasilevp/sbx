@@ -13,7 +13,26 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System;
 using System.Windows.Interop;
-using System.ComponentModel;
+using System.Collections;
+using SharpCompress.Readers;
+using SharpCompress.Common;
+using TagLib.Mpeg;
+using NAudio.Wave.SampleProviders;
+using NAudio.MediaFoundation;
+using sb1.Properties;
+using SharpDX.Multimedia;
+using static NAudio.Wave.MediaFoundationReader;
+using NAudio.Utils;
+using SharpCompress.IO;
+using static System.Windows.Forms.Design.AxImporter;
+using SharpCompress;
+using SharpCompress.Archives.SevenZip;
+using System.Xml.Linq;
+using SharpDX.Win32;
+using SharpCompress.Archives;
+using TagLib.IFD.Tags;
+using SharpCompress.Factories;
+using SharpCompress.Compressors.Xz;
 
 namespace sb1
 {
@@ -70,14 +89,33 @@ namespace sb1
 
         Overlay<FileInfo> overlay = new Overlay<FileInfo>();
 
+        string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        internal static bool cyrillicFix = true;
+        internal static bool useTags = true;
+
         struct FileInfo
         {
-            public AudioFileReader Reader;
+            public WaveStream Reader;
             public TagLib.Tag Tag;
+            public string FileName;
 
             public override string ToString()
             {
-                return Tag.Title ?? Path.GetFileNameWithoutExtension(Reader.FileName);
+                var fname = Path.GetFileNameWithoutExtension(FileName);
+                if (Tag.Title == null || !useTags)
+                {
+                    return fname;
+                }
+
+                if (!cyrillicFix)
+                {
+                    return Tag.Title;
+                }
+
+                var enc1251 = Encoding.GetEncoding(1251);
+                var enc1252 = Encoding.GetEncoding(1252);
+                return enc1251.GetString(enc1252.GetBytes(Tag.Title));
             }
         }
 
@@ -86,18 +124,14 @@ namespace sb1
             InitializeComponent();
 
             combobox1.ItemsSource = EnumerateDevices();
-            this.KeyUp += MainWindow_KeyUp;
 
 
             audio.PlaybackStopped += (o, e) =>
             status.Content = "Ready";
 
             overlay.IsVisible = false;
-        }
 
-        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
-        {
-
+            Directory.CreateDirectory(tempDirectory);
         }
 
         IEnumerable<string> EnumerateDevices()
@@ -109,70 +143,21 @@ namespace sb1
             }
         }
 
-        private void New_Click(object sender, RoutedEventArgs e)
+        private void ButtonOpenFolder_Click(object sender, RoutedEventArgs e)
         {
+            ButtonOpenArchive.IsEnabled = false;
+            ButtonOpenFolder.IsEnabled = false;
+
             var d = new VistaFolderBrowserDialog();
             if (!d.ShowDialog(this) ?? true)
             {
+                ButtonOpenArchive.IsEnabled = true;
+                ButtonOpenFolder.IsEnabled = true;
+
                 return;
             }
 
-            var files = Directory.GetFiles(d.SelectedPath);
-
-            progress.Maximum = files.Count();
-            progress.Value = 0;
-            progress.Visibility = Visibility.Visible;
-
-            Task.Run(() =>
-            {
-                var timer = new System.Diagnostics.Stopwatch();
-                timer.Start();
-
-                var audioFiles = new List<FileInfo>();
-                var failed = new List<string>();
-
-                var i = 0;
-                foreach (var f in files)
-                {
-                    //Application.Current.Dispatcher.Invoke(() => status.Content = $"Loading {f}...");
-                    try
-                    {
-                        var r = new AudioFileReader(f);
-                        var fi = new FileInfo();
-                        fi.Reader = r;
-                        fi.Tag = TagLib.File.Create(f).Tag;
-                        audioFiles.Add(fi);
-                    }
-                    catch (Exception)
-                    {
-                        failed.Add(f);
-                    }
-
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        progress.Value = i++;
-                        status.Content = $"Loading {Path.GetFileName(f)}...";
-                    });
-                }
-
-                fileSelector = new StableSelector<FileInfo>(audioFiles, 9);
-                //MapFiles();
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    DrawSelection();
-
-                    status.Content = $"{audioFiles.Count} files loaded in {timer.Elapsed.TotalSeconds}s";
-
-                    if (failed.Count > 0)
-                    {
-                        var failedFiles = string.Join(",", failed.Select(f => Path.GetFileName(f)));
-
-                        status.Content += $"; {failed.Count} files failed to load: {failedFiles}";
-                    }
-
-                    progress.Visibility = Visibility.Collapsed;
-                });
-            });
+            LoadDirectory(d.SelectedPath);
         }
 
         FileInfo? SelectSubset(int selection)
@@ -283,7 +268,7 @@ namespace sb1
                 result.Value.Reader.Seek(0, SeekOrigin.Begin);
                 audio.Stop();
                 audio.DeviceNumber = combobox1.SelectedIndex - 1;
-                audio.Init(result.Value.Reader, true);
+                audio.Init(result.Value.Reader);
                 audio.Play();
                 Application.Current.Dispatcher.InvokeAsync(() => status.Content = $"Playing {result.ToString()}");
             }
@@ -315,6 +300,163 @@ namespace sb1
             RegisterHotKey(hwnd, (int)HotKey.KP_PLUS, 0, (int)VirtualKey.VK_ADD);
             RegisterHotKey(hwnd, (int)HotKey.KP_MINUS, 0, (int)VirtualKey.VK_SUBTRACT);
             RegisterHotKey(hwnd, (int)HotKey.KP_MULTIPLY, 0, (int)VirtualKey.VK_MULTIPLY);
+        }
+
+        private void ButtonOpenArchive_Click(object sender, RoutedEventArgs e)
+        {
+            ButtonOpenArchive.IsEnabled = false;
+            ButtonOpenFolder.IsEnabled = false;
+
+            var d = new VistaOpenFileDialog();
+            d.Filter = "Archives|*.7z;*.zip;*.rar|All files|*.*";
+            if (!d.ShowDialog(this) ?? true)
+            {
+                ButtonOpenArchive.IsEnabled = true;
+                ButtonOpenFolder.IsEnabled = true;
+                return;
+            }
+
+            ClearDirectory();
+            Directory.CreateDirectory(tempDirectory);
+
+            using (var stream = d.OpenFile())
+            using (var archive = ArchiveFactory.Open(stream))
+                progress.Maximum = archive.Entries.Count();
+
+            progress.Value = 0;
+            progress.Visibility = Visibility.Visible;
+
+            Task.Run(() =>
+            {
+                using (var stream = d.OpenFile())
+                using (var archive = ArchiveFactory.Open(stream))
+                {
+                    foreach (var entry in archive.Entries)
+                    {
+                        if (entry.IsDirectory)
+                        {
+                            continue;
+                        }
+
+                        entry.WriteToDirectory(tempDirectory, new ExtractionOptions()
+                        {
+                            ExtractFullPath = false,
+                            Overwrite = true
+                        });
+
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            progress.Value++;
+                            status.Content = $"Read {entry.Key} ({progress.Value}/{progress.Maximum})";
+                        });
+                    }
+                }
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    LoadDirectory(tempDirectory);
+                });
+            });
+        }
+
+        void ClearDirectory()
+        {
+            fileSelector = null;
+            GC.Collect();
+            Directory.Delete(tempDirectory, true);
+        }
+
+        void LoadDirectory(string path)
+        {
+            var files = Directory.GetFiles(path);
+
+            progress.Maximum = files.Count();
+            progress.Value = 0;
+            progress.Visibility = Visibility.Visible;
+
+            Task.Run(() =>
+            {
+                var timer = new System.Diagnostics.Stopwatch();
+                timer.Start();
+
+                var audioFiles = new List<FileInfo>();
+                var failed = new List<string>();
+
+                var i = 0;
+                foreach (var f in files)
+                {
+                    Application.Current.Dispatcher.Invoke(() => status.Content = $"Loading {f} ({progress.Value}/{progress.Maximum})...");
+                    try
+                    {
+                        var r = new AudioFileReader(f);
+                        var fi = new FileInfo
+                        {
+                            Reader = r,
+                            Tag = TagLib.File.Create(f).Tag,
+                            FileName = f,
+                        };
+                        audioFiles.Add(fi);
+                    }
+                    catch (Exception)
+                    {
+                        failed.Add(f);
+                    }
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        progress.Value = i++;
+                    });
+                }
+
+                fileSelector = new StableSelector<FileInfo>(audioFiles, 9);
+                //MapFiles();
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    DrawSelection();
+
+                    status.Content = $"{audioFiles.Count} files loaded in {timer.Elapsed.TotalSeconds}s";
+
+                    if (failed.Count > 0)
+                    {
+                        var failedFiles = string.Join(",", failed.Select(f => Path.GetFileName(f)));
+
+                        status.Content += $"; {failed.Count} files failed to load: {failedFiles}";
+                    }
+
+                    progress.Visibility = Visibility.Collapsed;
+                    ButtonOpenArchive.IsEnabled = true;
+                    ButtonOpenFolder.IsEnabled = true;
+                });
+            });
+        }
+
+        private void MainWindow1_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            ClearDirectory();
+        }
+
+        private IEnumerable<IArchiveEntry> OpenArchive(Stream stream)
+        {
+            var options = new SharpCompress.Readers.ReaderOptions() { LeaveStreamOpen = false };
+
+            if (SevenZipArchive.IsSevenZipFile(stream))
+            {
+                return SevenZipArchive.Open(stream, options).Entries;
+            }
+
+            return null;
+        }
+
+        private void MainWindow1_KeyUp(object sender, KeyEventArgs e)
+        {
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var o = new Options();
+            o.ShowDialog();
+
+            DrawSelection();
         }
     }
 }
