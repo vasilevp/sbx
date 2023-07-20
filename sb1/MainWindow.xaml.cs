@@ -165,6 +165,8 @@ namespace sb1
             if (!fileSelector.Select(selection))
             {
                 var subdiv = fileSelector.GetCurrentSubdivision();
+                if (subdiv == null) return null;
+
                 if (subdiv.Count() > 9)
                 {
                     throw new Exception($"subdivision longer than 9 ({subdiv.Count()})");

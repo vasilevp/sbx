@@ -21,6 +21,8 @@ namespace sb1
 
         public bool Select(int subdivision)
         {
+            if (selection == null) return false;
+
             int rem;
             var lowerCount = Math.DivRem(selection.Count(), subdivisions, out rem);
             if (rem > subdivision)
@@ -41,6 +43,8 @@ namespace sb1
 
         public IEnumerable<IEnumerable<T>> GetSubdivisions()
         {
+            if (!selection.Any()) yield break;
+
             int rem;
             var lowerCount = Math.DivRem(selection.Count(), subdivisions, out rem);
             var piece = selection;
