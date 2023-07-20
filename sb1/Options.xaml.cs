@@ -25,6 +25,7 @@ namespace sb1
             cbCyrillicFix.IsChecked = MainWindow.cyrillicFix;
             cbCyrillicFix.IsEnabled = MainWindow.useTags;
             cbUseIDv3Tags.IsChecked = MainWindow.useTags;
+            cbTrimPrefix.IsChecked = MainWindow.trimPrefix;
         }
 
         private void cbUseIDv3Tags_Click(object sender, RoutedEventArgs e)
@@ -36,6 +37,11 @@ namespace sb1
         private void cbCyrillicFix_Click(object sender, RoutedEventArgs e)
         {
             MainWindow.cyrillicFix = cbCyrillicFix.IsChecked.Value;
+        }
+
+        private void cbTrimPrefix_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow.trimPrefix = cbTrimPrefix.IsChecked.Value;
         }
     }
 }

@@ -43,7 +43,7 @@ namespace sb1
 
         public IEnumerable<IEnumerable<T>> GetSubdivisions()
         {
-            if (!selection.Any()) yield break;
+            if (selection == null || !selection.Any()) yield break;
 
             int rem;
             var lowerCount = Math.DivRem(selection.Count(), subdivisions, out rem);

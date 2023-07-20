@@ -9,6 +9,7 @@
     <Grid>
         <CheckBox x:Name="cbCyrillicFix" Content="Cyrillic fix" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.547,3.363" Click="cbCyrillicFix_Click"/>
         <CheckBox x:Name="cbUseIDv3Tags" Content="Use IDv3 Tags" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="cbUseIDv3Tags_Click"/>
+        <CheckBox x:Name="cbTrimPrefix" Content="Auto-trim prefix" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.547,3.363" Click="cbTrimPrefix_Click"/>
 
     </Grid>
 </Window>

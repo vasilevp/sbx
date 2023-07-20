@@ -91,6 +91,8 @@ namespace sb1
 
         string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
+        internal static int trimAmount = 0;
+        internal static bool trimPrefix = true;
         internal static bool cyrillicFix = true;
         internal static bool useTags = true;
 
@@ -100,22 +102,25 @@ namespace sb1
             public TagLib.Tag Tag;
             public string FileName;
 
+            private static Encoding enc1251 = Encoding.GetEncoding(1251);
+            private static Encoding enc1252 = Encoding.GetEncoding(1252);
+
+            private string process(string s) => s.Substring(trimAmount).Trim();
+
             public override string ToString()
             {
                 var fname = Path.GetFileNameWithoutExtension(FileName);
                 if (Tag.Title == null || !useTags)
                 {
-                    return fname;
+                    return process(fname);
                 }
 
                 if (!cyrillicFix)
                 {
-                    return Tag.Title;
+                    return process(Tag.Title);
                 }
 
-                var enc1251 = Encoding.GetEncoding(1251);
-                var enc1252 = Encoding.GetEncoding(1252);
-                return enc1251.GetString(enc1252.GetBytes(Tag.Title));
+                return process(enc1251.GetString(enc1252.GetBytes(Tag.Title)));
             }
         }
 
@@ -185,11 +190,45 @@ namespace sb1
         void DrawSelection()
         {
             fileGrid.Children.Clear();
+            overlay.SetItems(null);
 
-            overlay.SetItems(fileSelector.GetSubdivisions());
+            var subdivs = fileSelector.GetSubdivisions();
+            if (subdivs == null)
+            {
+                return;
+            }
+
+            if (trimPrefix)
+            {
+                trimAmount = 0;
+                var prefix = subdivs.FirstOrDefault().FirstOrDefault().ToString();
+                foreach (var part in subdivs)
+                {
+                    foreach (var fi in part)
+                    {
+                        var name = fi.ToString();
+                        for (int ii = 0; ii < Math.Min(prefix.Count(), name.Count()); ii++)
+                        {
+                            if (prefix[ii] != name[ii])
+                            {
+                                prefix = prefix.Substring(0, ii);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                trimAmount = prefix.Count();
+            }
+            else
+            {
+                trimAmount = 0;
+            }
+
+            overlay.SetItems(subdivs);
 
             int i = 0;
-            foreach (var part in fileSelector.GetSubdivisions())
+            foreach (var part in subdivs)
             {
                 int shift = 0;
                 foreach (var f in part)

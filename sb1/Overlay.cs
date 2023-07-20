@@ -179,7 +179,7 @@ return to the top level.
 
         public void SetItems(IEnumerable<IEnumerable<T>> items)
         {
-            this.items = items.ToList();
+            this.items = items?.ToList();
         }
 
         public void SwitchFontSize()
