@@ -105,7 +105,12 @@ namespace sb1
             private static Encoding enc1251 = Encoding.GetEncoding(1251);
             private static Encoding enc1252 = Encoding.GetEncoding(1252);
 
-            private string process(string s) => s.Substring(trimAmount).Trim();
+            private string process(string s)
+            {
+                if (trimAmount >= s.Count()) return s.Trim();
+
+                return s.Substring(trimAmount).Trim();
+            }
 
             public override string ToString()
             {
