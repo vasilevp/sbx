@@ -26,6 +26,10 @@ namespace sb1
             cbCyrillicFix.IsEnabled = MainWindow.useTags;
             cbUseIDv3Tags.IsChecked = MainWindow.useTags;
             cbTrimPrefix.IsChecked = MainWindow.trimPrefix;
+            slVolume.Value = MainWindow.volume;
+            slVolume.ValueChanged += Slider_ValueChanged;
+            slLoopbackVolume.Value = MainWindow.monitorVolume;
+            slLoopbackVolume.ValueChanged += SliderMonitor_ValueChanged;
         }
 
         private void cbUseIDv3Tags_Click(object sender, RoutedEventArgs e)
@@ -42,6 +46,15 @@ namespace sb1
         private void cbTrimPrefix_Click(object sender, RoutedEventArgs e)
         {
             MainWindow.trimPrefix = cbTrimPrefix.IsChecked.Value;
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            MainWindow.volume = (float)e.NewValue;
+        }
+        private void SliderMonitor_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            MainWindow.monitorVolume = (float)e.NewValue;
         }
     }
 }

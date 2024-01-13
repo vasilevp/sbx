@@ -3,13 +3,28 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:sb1"
+        xmlns:local="clr-namespace:sb1" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="Options" Height="189" Width="127">
+        Title="Options" Height="188" Width="252">
     <Grid>
-        <CheckBox x:Name="cbCyrillicFix" Content="Cyrillic fix" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.547,3.363" Click="cbCyrillicFix_Click"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <CheckBox x:Name="cbCyrillicFix" Content="Cyrillic fix" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.547,3.363" Click="cbCyrillicFix_Click" Grid.Row="1"/>
         <CheckBox x:Name="cbUseIDv3Tags" Content="Use IDv3 Tags" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="cbUseIDv3Tags_Click"/>
-        <CheckBox x:Name="cbTrimPrefix" Content="Auto-trim prefix" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.547,3.363" Click="cbTrimPrefix_Click"/>
+        <CheckBox x:Name="cbTrimPrefix" Content="Auto-trim prefix" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.547,3.363" Click="cbTrimPrefix_Click" Grid.Row="2" Margin="11,0,0,0" UseLayoutRounding="False"/>
+        <Slider x:Name="slVolume" Margin="10,10,10,0" VerticalAlignment="Top" Height="23" Value="1" Maximum="1" TickPlacement="BottomRight" LargeChange="0.1" SmallChange="0.05" Grid.Row="3" Grid.Column="1"/>
+        <Label Content="Output volume" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Center" Margin="10,0,0,0" Height="14" Padding="0,0,0,0"/>
+        <Label Content="Loopback volume" HorizontalAlignment="Left" Grid.Row="4" VerticalAlignment="Center" Margin="10,0,0,0" Height="14" Padding="0,0,0,0"/>
+        <Slider x:Name="slLoopbackVolume" Margin="10,10,10,0" VerticalAlignment="Top" Height="23" Value="1" Maximum="1" TickPlacement="BottomRight" LargeChange="0.1" SmallChange="0.05" Grid.Row="4" Grid.Column="1"/>
 
     </Grid>
 </Window>
