@@ -11,8 +11,10 @@ class AudioPlaybackEngine : IDisposable
 
     public AudioPlaybackEngine(int sampleRate = 44100, int channelCount = 2)
     {
-        mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channelCount));
-        mixer.ReadFully = true;
+        mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channelCount))
+        {
+            ReadFully = true
+        };
         mixer.MixerInputEnded += OnMixerInputEnded;
     }
 
@@ -30,10 +32,12 @@ class AudioPlaybackEngine : IDisposable
 
     public void Init(int deviceNumber)
     {
-        if (outputDevice != null) outputDevice.Dispose();
+        outputDevice?.Dispose();
 
-        var output = new WaveOutEvent();
-        output.DeviceNumber = deviceNumber;
+        var output = new WaveOutEvent
+        {
+            DeviceNumber = deviceNumber
+        };
         output.Init(mixer);
         output.Play();
 
@@ -42,8 +46,10 @@ class AudioPlaybackEngine : IDisposable
 
     public void PlaySound(IWaveProvider wave, float volume = 1)
     {
-        var sampleProvider = new VolumeSampleProvider(wave.ToSampleProvider());
-        sampleProvider.Volume = volume;
+        var sampleProvider = new VolumeSampleProvider(wave.ToSampleProvider())
+        {
+            Volume = volume
+        };
         AddMixerInput(sampleProvider);
     }
 

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:sb1"
         mc:Ignorable="d"
-        Title="SoundboardX" Width="329" Height="592" Loaded="Window_Loaded" Closing="MainWindow1_Closing" KeyUp="MainWindow1_KeyUp" MinHeight="600">
+        Title="SoundboardX" Width="329" Height="592" Loaded="Window_Loaded" Closing="MainWindow1_Closing" MinHeight="600">
     <Grid>
 
         <Grid.RowDefinitions>

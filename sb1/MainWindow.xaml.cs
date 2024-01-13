@@ -67,9 +67,9 @@ namespace sb1
         [DllImport("user32.dll")]
         public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-        StableSelector<FileInfo> fileSelector = new StableSelector<FileInfo>(null, 9);
+        StableSelector<FileInfo> fileSelector = new(null, 9);
 
-        Overlay<FileInfo> overlay = new Overlay<FileInfo>();
+        Overlay<FileInfo> overlay = new();
 
         string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
@@ -80,12 +80,8 @@ namespace sb1
         internal static float volume = 1.0f;
         internal static float monitorVolume = 1.0f;
 
-        WaveOutEvent audio = new WaveOutEvent();
-        WaveOutEvent audioMonitor = new WaveOutEvent();
-
-        WaveIn loopbackSourceStream = null;
-        BufferedWaveProvider loopbackWaveProvider = null;
-        WaveOut loopbackWaveOut = null;
+        WaveOutEvent audio = new();
+        WaveOutEvent audioMonitor = new();
 
         struct FileInfo
         {
@@ -94,17 +90,17 @@ namespace sb1
             public TagLib.Tag Tag;
             public string FileName;
 
-            private static Encoding enc1251 = Encoding.GetEncoding(1251);
-            private static Encoding enc1252 = Encoding.GetEncoding(1252);
+            private static readonly Encoding enc1251 = Encoding.GetEncoding(1251);
+            private static readonly Encoding enc1252 = Encoding.GetEncoding(1252);
 
-            private string process(string s)
+            private static string process(string s)
             {
-                if (trimAmount >= s.Count()) return s.Trim();
+                if (trimAmount >= s.Length) return s.Trim();
 
-                return s.Substring(trimAmount).Trim();
+                return s[trimAmount..].Trim();
             }
 
-            public override string ToString()
+            public override readonly string ToString()
             {
                 var fname = Path.GetFileNameWithoutExtension(FileName);
                 if (Tag.Title == null || !useTags)
@@ -136,17 +132,18 @@ namespace sb1
 
         IEnumerable<string> PlaybackDevices()
         {
+            // get proper device names because NAudio is kinda dumb
             var devices = new MMDeviceEnumerator().
                 EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active).
-                GroupBy(x => x.FriendlyName.Substring(0, Math.Min(x.FriendlyName.Length, 31))). // take first 32 letters
+                GroupBy(x => x.FriendlyName[..Math.Min(x.FriendlyName.Length, 31)]).
                 ToDictionary(x => x.Key);
 
-            // get proper device names because NAudio is kinda dumb
+            // return proper names in WaveOut order
             return
-                from cap in (
+                from name in (
                     from i in Enumerable.Range(-1, WaveOut.DeviceCount + 1) select WaveOut.GetCapabilities(i).ProductName
                     )
-                select "Out: " + (devices.ContainsKey(cap) && devices[cap].Count() == 1 ? devices[cap].First().FriendlyName : cap);
+                select "Out: " + (devices.TryGetValue(name, out var device) && device.Count() == 1 ? device.First().FriendlyName : name);
         }
 
         private void ButtonOpenFolder_Click(object sender, RoutedEventArgs e)
@@ -208,18 +205,18 @@ namespace sb1
                     foreach (var fi in part)
                     {
                         var name = fi.ToString();
-                        for (int ii = 0; ii < Math.Min(prefix.Count(), name.Count()); ii++)
+                        for (int ii = 0; ii < Math.Min(prefix.Length, name.Length); ii++)
                         {
                             if (prefix[ii] != name[ii])
                             {
-                                prefix = prefix.Substring(0, ii);
+                                prefix = prefix[..ii];
                                 break;
                             }
                         }
                     }
                 }
 
-                trimAmount = prefix.Count();
+                trimAmount = prefix.Length;
             }
             else
             {
@@ -234,9 +231,11 @@ namespace sb1
                 int shift = 0;
                 foreach (var f in part)
                 {
-                    var l = new Label();
-                    l.Content = f;
-                    l.Margin = new Thickness { Top = shift };
+                    var l = new Label
+                    {
+                        Content = f,
+                        Margin = new Thickness { Top = shift }
+                    };
                     Grid.SetColumn(l, i % 3);
                     Grid.SetRow(l, i / 3);
 
@@ -311,8 +310,10 @@ namespace sb1
                 result.Value.Reader.Seek(0, SeekOrigin.Begin);
                 audio.Stop();
                 audio.DeviceNumber = cbOutputDevice.SelectedIndex - 1;
-                var vsp = new VolumeSampleProvider(result.Value.Reader.ToSampleProvider());
-                vsp.Volume = volume;
+                var vsp = new VolumeSampleProvider(result.Value.Reader.ToSampleProvider())
+                {
+                    Volume = volume
+                };
                 audio.Init(vsp);
 
                 if (checkboxInput.IsChecked.Value)
@@ -320,15 +321,17 @@ namespace sb1
                     result.Value.Reader2.Seek(0, SeekOrigin.Begin);
                     audioMonitor.Stop();
                     audioMonitor.DeviceNumber = cbMonitorDevice.SelectedIndex - 1;
-                    var vsp2 = new VolumeSampleProvider(result.Value.Reader2.ToSampleProvider());
-                    vsp2.Volume = monitorVolume;
+                    var vsp2 = new VolumeSampleProvider(result.Value.Reader2.ToSampleProvider())
+                    {
+                        Volume = monitorVolume
+                    };
                     audioMonitor.Init(vsp2);
                     audioMonitor.Play();
                 }
 
                 audio.Play();
 
-                Application.Current.Dispatcher.InvokeAsync(() => status.Content = $"Playing {result.ToString()}");
+                Application.Current.Dispatcher.InvokeAsync(() => status.Content = $"Playing {result}");
             }
             catch (Exception e)
             {
@@ -365,8 +368,10 @@ namespace sb1
             ButtonOpenArchive.IsEnabled = false;
             ButtonOpenFolder.IsEnabled = false;
 
-            var d = new VistaOpenFileDialog();
-            d.Filter = "Archives|*.7z;*.zip;*.rar|All files|*.*";
+            var d = new VistaOpenFileDialog
+            {
+                Filter = "Archives|*.7z;*.zip;*.rar|All files|*.*"
+            };
             if (!d.ShowDialog(this) ?? true)
             {
                 ButtonOpenArchive.IsEnabled = true;
@@ -428,7 +433,7 @@ namespace sb1
         {
             var files = Directory.GetFiles(path);
 
-            progress.Maximum = files.Count();
+            progress.Maximum = files.Length;
             progress.Value = 0;
             progress.Visibility = Visibility.Visible;
 
@@ -469,7 +474,6 @@ namespace sb1
                 }
 
                 fileSelector = new StableSelector<FileInfo>(audioFiles, 9);
-                //MapFiles();
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     DrawSelection();
@@ -507,22 +511,12 @@ namespace sb1
             return null;
         }
 
-        private void MainWindow1_KeyUp(object sender, KeyEventArgs e)
-        {
-        }
-
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             var o = new Options();
             o.ShowDialog();
 
             DrawSelection();
-        }
-
-        private void loopbackSourceStream_DataAvailable(object sender, WaveInEventArgs e)
-        {
-            if (loopbackWaveProvider != null && loopbackWaveProvider.BufferedDuration.TotalMilliseconds <= 100)
-                loopbackWaveProvider.AddSamples(e.Buffer, 0, e.BytesRecorded);
         }
 
         private void cbOutputDevice_SelectionChanged(object sender, SelectionChangedEventArgs e)

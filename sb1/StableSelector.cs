@@ -8,8 +8,8 @@ namespace sb1
 {
     public class StableSelector<T>
     {
-        private int subdivisions;
-        private IEnumerable<T> items;
+        private readonly int subdivisions;
+        private readonly IEnumerable<T> items;
         private IEnumerable<T> selection;
 
         public StableSelector(IEnumerable<T> items, int subdivisions)
@@ -23,8 +23,7 @@ namespace sb1
         {
             if (selection == null) return false;
 
-            int rem;
-            var lowerCount = Math.DivRem(selection.Count(), subdivisions, out rem);
+            var lowerCount = Math.DivRem(selection.Count(), subdivisions, out int rem);
             if (rem > subdivision)
             {
                 // incorporate remainder into lowerCount
@@ -45,8 +44,7 @@ namespace sb1
         {
             if (selection == null || !selection.Any()) yield break;
 
-            int rem;
-            var lowerCount = Math.DivRem(selection.Count(), subdivisions, out rem);
+            var lowerCount = Math.DivRem(selection.Count(), subdivisions, out int rem);
             var piece = selection;
             for (var i = 0; i < subdivisions; i++)
             {
