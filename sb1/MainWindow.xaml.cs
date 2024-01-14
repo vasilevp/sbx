@@ -5,7 +5,6 @@ using System.IO;
 using System.Windows;
 using System.Linq;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
@@ -120,6 +119,7 @@ namespace sb1
         public MainWindow()
         {
             InitializeComponent();
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // needed for cyrillic fix
 
             cbOutputDevice.ItemsSource = PlaybackDevices();
             cbMonitorDevice.ItemsSource = PlaybackDevices();
