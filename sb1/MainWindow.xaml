@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:sb1"
         mc:Ignorable="d"
-        Title="SoundboardX" Width="329" Height="592" Loaded="Window_Loaded" Closing="MainWindow1_Closing" MinHeight="600" WindowStyle="ThreeDBorderWindow">
+        Title="SoundboardX" Width="402" Height="592" Loaded="Window_Loaded" Closing="MainWindow1_Closing" MinHeight="600" WindowStyle="ThreeDBorderWindow">
     <Grid>
 
         <Grid.RowDefinitions>
@@ -55,7 +55,7 @@
         </Grid>
         <StatusBar Grid.Row="2" Height="30" VerticalAlignment="Bottom">
             <ProgressBar x:Name="progress" Height="10" Width="100" Visibility="Collapsed"/>
-            <Label x:Name="status" Content="Ready" FontSize="12"/>
+            <Label x:Name="status" Content="Ready" FontSize="12" Height="27"/>
         </StatusBar>
         <Button x:Name="ButtonOpenArchive" Content="Load Archive" HorizontalAlignment="Right" Margin="0,36,10,0" Grid.Row="2" VerticalAlignment="Top" Width="75" Height="20" Click="ButtonOpenArchive_Click"/>
         <Menu Background="#FFF0F0F0">
