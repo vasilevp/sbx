@@ -16,7 +16,9 @@ using SharpCompress.Archives;
 using NAudio.CoreAudioApi;
 using NAudio.Wave.SampleProviders;
 
-namespace sb1
+using static sbx.Translator;
+
+namespace sbx
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -123,7 +125,7 @@ namespace sb1
 
             cbOutputDevice.ItemsSource = PlaybackDevices();
             cbMonitorDevice.ItemsSource = PlaybackDevices();
-            audio.PlaybackStopped += (o, e) => status.Content = "Ready";
+            audio.PlaybackStopped += (o, e) => status.Content = Translate("Ready");
 
             overlay.IsVisible = false;
 
@@ -143,7 +145,9 @@ namespace sb1
                 from name in (
                     from i in Enumerable.Range(-1, WaveOut.DeviceCount + 1) select WaveOut.GetCapabilities(i).ProductName
                     )
-                select "Out: " + (devices.TryGetValue(name, out var device) && device.Count() == 1 ? device.First().FriendlyName : name);
+                select devices.TryGetValue(name, out var device) && device.Count() == 1
+                    ? device.First().FriendlyName
+                    : name;
         }
 
         private void ButtonOpenFolder_Click(object sender, RoutedEventArgs e)
@@ -331,11 +335,11 @@ namespace sb1
 
                 audio.Play();
 
-                Application.Current.Dispatcher.InvokeAsync(() => status.Content = $"Playing {result}");
+                Application.Current.Dispatcher.InvokeAsync(() => status.Content = Translate("Playing {0}", result));
             }
             catch (Exception e)
             {
-                status.Content = $"Error: {e.Message}";
+                status.Content = $"{Translate("Error")}: {e.Message}";
             }
         }
 
@@ -410,7 +414,7 @@ namespace sb1
                         Application.Current.Dispatcher.Invoke(() =>
                         {
                             progress.Value++;
-                            status.Content = $"Read {entry.Key} ({progress.Value}/{progress.Maximum})";
+                            status.Content = Translate("Read {0} ({1}/{2})", entry.Key, progress.Value, progress.Maximum);
                         });
                     }
                 }
@@ -448,7 +452,7 @@ namespace sb1
                 var i = 0;
                 foreach (var f in files)
                 {
-                    Application.Current.Dispatcher.Invoke(() => status.Content = $"Loading {f} ({progress.Value}/{progress.Maximum})...");
+                    Application.Current.Dispatcher.Invoke(() => status.Content = Translate("Loading {0} ({1}/{2})", f, progress.Value, progress.Maximum));
                     try
                     {
                         var r = new AudioFileReader(f);
@@ -478,13 +482,13 @@ namespace sb1
                 {
                     DrawSelection();
 
-                    status.Content = $"{audioFiles.Count} files loaded in {timer.Elapsed.TotalSeconds}s";
+                    status.Content = Translate("{0} files loaded in {1}s", audioFiles.Count, timer.Elapsed.TotalSeconds);
 
                     if (failed.Count > 0)
                     {
                         var failedFiles = string.Join(",", failed.Select(f => Path.GetFileName(f)));
 
-                        status.Content += $"; {failed.Count} files failed to load: {failedFiles}";
+                        status.Content += Translate("; {0} files failed to load: {1}", failed.Count, failedFiles);
                     }
 
                     progress.Visibility = Visibility.Collapsed;
@@ -535,6 +539,26 @@ namespace sb1
 
             cbMonitorDevice.IsEnabled = false;
             audioMonitor.Stop();
+        }
+
+        private void btnLangRu_Click(object sender, RoutedEventArgs e)
+        {
+            App.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("lang\\ru-RU.xaml", UriKind.Relative)
+            });
+
+            status.Content = Translate("Language changed");
+        }
+
+        private void btnLangEn_Click(object sender, RoutedEventArgs e)
+        {
+            App.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("lang\\en-GB.xaml", UriKind.Relative)
+            });
+            
+            status.Content = Translate("Language changed");
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace sb1
+namespace sbx
 {
     /// <summary>
     /// Interaction logic for App.xaml

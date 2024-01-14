@@ -1,0 +1,38 @@
+﻿<ResourceDictionary 
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!-- String resource that can be localized -->
+    <system:String x:Key="Language changed">Language changed to English</system:String>
+
+    <system:String x:Key="Error">Error</system:String>
+    <system:String x:Key="Ready">Ready</system:String>
+    <system:String x:Key="Load Archive">Load Archive</system:String>
+    <system:String x:Key="Load Folder">Load Folder</system:String>
+    <system:String x:Key="{}{0} files loaded in {1}s">{0} files loaded in {1}s</system:String>
+    <system:String x:Key="{}; {0} files failed to load: {1}">; {0} files failed to load: {1}</system:String>
+    <system:String x:Key="Read {0} ({1}/{2})">Read {0} ({1}/{2})</system:String>
+    <system:String x:Key="Loading {0} ({1}/{2})">Loading {0} ({1}/{2})</system:String>
+    <system:String x:Key="Playing {0}">Playing {0}</system:String>
+
+    <system:String x:Key="Options">Options</system:String>
+    <system:String x:Key="Use IDv3 Tags">Use IDv3 Tags</system:String>
+    <system:String x:Key="Cyrillic fix">Cyrillic fix</system:String>
+    <system:String x:Key="Auto-trim prefix">Auto-trim prefix</system:String>
+    <system:String x:Key="Output volume">Output volume</system:String>
+    <system:String x:Key="Monitor volume">Monitor volume</system:String>
+
+    <system:String x:Key="Overlay">Overlay</system:String>
+    <system:String x:Key="(none)">(none)</system:String>
+    <system:String x:Key="overlayHelp" xml:space="preserve">Hotkeys:
+     * - │ *: switch font size
+ 7 8 9 + │ -: stop current sound
+ 4 5 6   │ +: toggle overlay
+ 1 2 3   │ Number: go into group
+
+If the group has only one sound,
+it will be played and you will
+return to the top level.
+</system:String>
+</ResourceDictionary>

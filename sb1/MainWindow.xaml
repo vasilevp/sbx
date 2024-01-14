@@ -1,17 +1,19 @@
-﻿<Window x:Name="MainWindow1" x:Class="sb1.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:sb1"
+        xmlns:local="clr-namespace:sbx"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Name="MainWindow1" x:Class="sbx.MainWindow"
         mc:Ignorable="d"
+        xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         Title="SoundboardX" Width="402" Height="592" Loaded="Window_Loaded" Closing="MainWindow1_Closing" MinHeight="600" WindowStyle="ThreeDBorderWindow">
     <Grid>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="14*"/>
+            <RowDefinition Height="25"/>
             <RowDefinition Height="277*"/>
-            <RowDefinition Height="56*" MinHeight="40"/>
+            <RowDefinition Height="100"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="34*"/>
@@ -29,9 +31,8 @@
             </Grid.ColumnDefinitions>
 
         </Grid>
-        <Button x:Name="ButtonOpenFolder" Content="Load Folder" HorizontalAlignment="Right" Margin="0,10,10,0" Grid.Row="2" VerticalAlignment="Top" Width="75" Click="ButtonOpenFolder_Click" Height="20"/>
-        <ComboBox x:Name="cbOutputDevice" Margin="10,10,90,0" Grid.Row="2" VerticalAlignment="Top" Height="20" SelectedIndex="0" SelectionChanged="cbOutputDevice_SelectionChanged" ToolTip="Output devices">
-        </ComboBox>
+        <Button x:Name="ButtonOpenFolder" Content="{DynamicResource Load Folder}" HorizontalAlignment="Right" Margin="0,10,10,0" Grid.Row="2" VerticalAlignment="Top" Click="ButtonOpenFolder_Click" Height="20" Width="90"/>
+        <ComboBox x:Name="cbOutputDevice" Margin="10,10,105,0" Grid.Row="2" VerticalAlignment="Top" Height="20" SelectedIndex="0" SelectionChanged="cbOutputDevice_SelectionChanged" ToolTip="Output devices"/>
         <Grid Margin="0,10,0,0" Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition/>
@@ -55,14 +56,32 @@
         </Grid>
         <StatusBar Grid.Row="2" Height="30" VerticalAlignment="Bottom">
             <ProgressBar x:Name="progress" Height="10" Width="100" Visibility="Collapsed"/>
-            <Label x:Name="status" Content="Ready" FontSize="12" Height="27"/>
+            <Label x:Name="status" Content="{DynamicResource Ready}" FontSize="12" Height="27"/>
         </StatusBar>
-        <Button x:Name="ButtonOpenArchive" Content="Load Archive" HorizontalAlignment="Right" Margin="0,36,10,0" Grid.Row="2" VerticalAlignment="Top" Width="75" Height="20" Click="ButtonOpenArchive_Click"/>
+        <Button x:Name="ButtonOpenArchive" Content="{DynamicResource Load Archive}" HorizontalAlignment="Right" Margin="0,36,10,0" Grid.Row="2" VerticalAlignment="Top" Width="90" Height="20" Click="ButtonOpenArchive_Click"/>
         <Menu Background="#FFF0F0F0">
-            <MenuItem Header="Options" Click="MenuItem_Click"/>
+            <MenuItem Header="{DynamicResource Options}" Click="MenuItem_Click" Width="75"/>
+            <Button x:Name="btnLangRu" Padding="1,0,0,0" Foreground="{x:Null}" Background="{x:Null}" BorderBrush="{x:Null}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Style="{DynamicResource TransparentStyle}" Click="btnLangRu_Click">
+                <Image emoji:Image.Source="🇷🇺"/>
+            </Button>
+            <Button x:Name="btnLangEn" Padding="1,0,0,0" Foreground="{x:Null}" Background="{x:Null}" BorderBrush="{x:Null}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Style="{DynamicResource TransparentStyle}" Click="btnLangEn_Click">
+                <Image emoji:Image.Source="🇬🇧"/>
+            </Button>
         </Menu>
-        <ComboBox x:Name="cbMonitorDevice" Margin="28,0,90,0" Grid.Row="2" VerticalAlignment="Center" Height="20" SelectedIndex="0" SelectionChanged="cbOutputDevice_SelectionChanged" ToolTip="Monitor devices" IsEnabled="False"/>
-        <CheckBox x:Name="checkboxInput" Content="" Margin="10,0,0,0" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Left" Width="18" Click="checkboxInput_Click"/>
+        <ComboBox x:Name="cbMonitorDevice" Margin="28,37,105,0" Grid.Row="2" VerticalAlignment="Top" Height="20" SelectedIndex="0" SelectionChanged="cbOutputDevice_SelectionChanged" ToolTip="Monitor devices" IsEnabled="False"/>
+        <CheckBox x:Name="checkboxInput" Content="" Margin="10,39,0,0" Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Left" Width="18" Click="checkboxInput_Click"/>
     </Grid>
-
+    <Window.Resources>
+        <Style x:Key="TransparentStyle" TargetType="{x:Type Button}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent">
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 </Window>

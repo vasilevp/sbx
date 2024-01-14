@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using static sbx.Translator;
 
-namespace sb1
+namespace sbx
 {
     class Overlay<T>
     {
@@ -33,13 +33,13 @@ namespace sb1
                 PerPrimitiveAntiAliasing = true,
                 TextAntiAliasing = true
             };
-
+            
             window = new GraphicsWindow(0, 0, keypadsize * 5 / 4, keypadsize, gfx)
             {
                 FPS = 30,
                 IsTopmost = true,
                 IsVisible = true,
-                Title = "Overlay",
+                Title = Translate("Overlay"),
             };
 
             Geometry grid = null;
@@ -106,7 +106,7 @@ namespace sb1
                             i / 3 * keypadsize / 3 + keypadsize / 6,
                             i % 3 * keypadsize / 3,
                             i / 3 * keypadsize / 3,
-                            "(none)"
+                            Translate("(none)")
                             );
                         continue;
                     }
@@ -138,16 +138,7 @@ namespace sb1
                     0,
                     keypadsize + 5,
                     0,
-                    @"Hotkeys:
-     * - │ *: switch font size
- 7 8 9 + │ -: stop current sound
- 4 5 6   │ +: toggle overlay
- 1 2 3   │ Number: go into group
-
-If the group has only one sound,
-it will be played and you will
-return to the top level.
-                    "
+                    Translate("overlayHelp")
                     );
             };
         }

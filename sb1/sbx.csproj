@@ -32,14 +32,14 @@
     <ManifestCertificateThumbprint>DD1109A21652BACB7DEDEBC3C02826E58E968B42</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>sb1_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>sbx_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>true</SignManifests>
-    <StartupObject>sb1.App</StartupObject>
+    <StartupObject>sbx.App</StartupObject>
     <SupportedOSPlatformVersion>8.0</SupportedOSPlatformVersion>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
@@ -72,7 +72,8 @@
     <Content Include="icon2.ico" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0">
+    <PackageReference Include="Emoji.Wpf" Version="0.3.4" />
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.1">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
     <PackageReference Include="GameOverlay.Net" Version="4.3.1" />

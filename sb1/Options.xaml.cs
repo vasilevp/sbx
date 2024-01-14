@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace sb1
+namespace sbx
 {
     /// <summary>
     /// Interaction logic for Options.xaml
