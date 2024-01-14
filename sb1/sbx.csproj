@@ -24,7 +24,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <UseWindowsForms>False</UseWindowsForms>
     <UseWPF>True</UseWPF>
-    <VersionPrefix>0.2.0</VersionPrefix>
+    <VersionPrefix>0.3.1</VersionPrefix>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
@@ -44,9 +44,8 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <DelaySign>False</DelaySign>
-    <AssemblyVersion>0.3.0.0</AssemblyVersion>
-    <FileVersion>0.3.0.0</FileVersion>
     <ApplicationIcon>icon2.ico</ApplicationIcon>
+    <Version>$(VersionPrefix)</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'" />
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-windows8.0|AnyCPU'">
