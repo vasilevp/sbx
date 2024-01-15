@@ -15,6 +15,9 @@
     <system:String x:Key="Read {0} ({1}/{2})">Read {0} ({1}/{2})</system:String>
     <system:String x:Key="Loading {0} ({1}/{2})">Loading {0} ({1}/{2})</system:String>
     <system:String x:Key="Playing {0}">Playing {0}</system:String>
+    <system:String x:Key="Output device">Output device</system:String>
+    <system:String x:Key="Monitoring">Monitoring</system:String>
+    <system:String x:Key="Monitoring device">Monitoring device</system:String>
 
     <system:String x:Key="Options">Options</system:String>
     <system:String x:Key="Use IDv3 Tags">Use IDv3 Tags</system:String>

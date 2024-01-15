@@ -11,7 +11,6 @@ using System.Runtime.InteropServices;
 using System;
 using System.Windows.Interop;
 using SharpCompress.Common;
-using SharpCompress.Archives.SevenZip;
 using SharpCompress.Archives;
 using NAudio.CoreAudioApi;
 using NAudio.Wave.SampleProviders;
@@ -503,18 +502,6 @@ namespace sbx
             ClearDirectory();
         }
 
-        private IEnumerable<IArchiveEntry> OpenArchive(Stream stream)
-        {
-            var options = new SharpCompress.Readers.ReaderOptions() { LeaveStreamOpen = false };
-
-            if (SevenZipArchive.IsSevenZipFile(stream))
-            {
-                return SevenZipArchive.Open(stream, options).Entries;
-            }
-
-            return null;
-        }
-
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             var o = new Options();
@@ -557,7 +544,7 @@ namespace sbx
             {
                 Source = new Uri("lang\\en-GB.xaml", UriKind.Relative)
             });
-            
+
             status.Content = Translate("Language changed");
         }
     }
