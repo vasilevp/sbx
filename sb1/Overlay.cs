@@ -8,7 +8,7 @@ using static sbx.Translator;
 
 namespace sbx
 {
-    class Overlay<T>
+    class Overlay<T> : IDisposable
     {
         GraphicsWindow window;
         Graphics gfx;
@@ -193,6 +193,12 @@ namespace sbx
                     fontSize = 14;
                     break;
             }
+        }
+
+        public void Dispose()
+        {
+            window.Dispose();
+            gfx.Dispose();
         }
     }
 }

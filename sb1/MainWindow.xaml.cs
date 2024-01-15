@@ -500,6 +500,7 @@ namespace sbx
         private void MainWindow1_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             ClearDirectory();
+            overlay.Dispose();
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
