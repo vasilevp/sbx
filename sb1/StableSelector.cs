@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace sbx
 {
-    public class StableSelector<T>
+    public class StableSelector<T> : IDisposable
     {
         private readonly int subdivisions;
         private readonly IEnumerable<T> items;
@@ -17,6 +17,19 @@ namespace sbx
             this.items = items;
             selection = items;
             this.subdivisions = subdivisions;
+        }
+
+        public void Dispose()
+        {
+            if (items == null)
+            {
+                return;
+            }
+
+            foreach (var item in items)
+            {
+                (item as IDisposable)?.Dispose();
+            }
         }
 
         public bool Select(int subdivision)

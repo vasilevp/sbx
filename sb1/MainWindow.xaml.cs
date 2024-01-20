@@ -1,6 +1,8 @@
 ﻿using NAudio.Wave;
 using Ookii.Dialogs.Wpf;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Linq;
@@ -58,7 +60,6 @@ namespace sbx
         KP_MULTIPLY,
     };
 
-
     public partial class MainWindow : Window
     {
         [DllImport("user32.dll")]
@@ -71,51 +72,10 @@ namespace sbx
 
         Overlay<FileInfo> overlay = new();
 
-        string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-        internal static int trimAmount = 0;
-        internal static bool trimPrefix = false;
-        internal static bool cyrillicFix = true;
-        internal static bool useTags = false;
-        internal static float volume = 1.0f;
-        internal static float monitorVolume = 1.0f;
+        string tempDirectory = Path.Combine(Path.GetTempPath(), "sbx_" + Path.GetRandomFileName());
 
         WaveOutEvent audio = new();
         WaveOutEvent audioMonitor = new();
-
-        struct FileInfo
-        {
-            public WaveStream Reader;
-            public WaveStream Reader2;
-            public TagLib.Tag Tag;
-            public string FileName;
-
-            private static readonly Encoding enc1251 = Encoding.GetEncoding(1251);
-            private static readonly Encoding enc1252 = Encoding.GetEncoding(1252);
-
-            private static string process(string s)
-            {
-                if (trimAmount >= s.Length) return s.Trim();
-
-                return s[trimAmount..].Trim();
-            }
-
-            public override readonly string ToString()
-            {
-                var fname = Path.GetFileNameWithoutExtension(FileName);
-                if (Tag.Title == null || !useTags)
-                {
-                    return process(fname);
-                }
-
-                if (!cyrillicFix)
-                {
-                    return process(Tag.Title);
-                }
-
-                return process(enc1251.GetString(enc1252.GetBytes(Tag.Title)));
-            }
-        }
 
         public MainWindow()
         {
@@ -166,29 +126,30 @@ namespace sbx
             LoadDirectory(d.SelectedPath);
         }
 
-        FileInfo? SelectSubset(int selection)
+        FileInfo SelectSubset(int selection)
         {
             if (!fileSelector.Select(selection))
             {
                 var subdiv = fileSelector.GetCurrentSubdivision();
-                if (subdiv == null) return null;
+                if (subdiv == null)
+                    return null;
 
                 if (subdiv.Count() > 9)
                 {
                     throw new Exception($"subdivision longer than 9 ({subdiv.Count()})");
                 }
-                var result = subdiv.FirstOrDefault();
-                fileSelector.Unselect();
-                DrawSelection();
 
-                return result;
+                fileSelector.Unselect();
+                DrawSelection(true);
+
+                return subdiv.FirstOrDefault();
             }
 
-            DrawSelection();
+            DrawSelection(false);
             return null;
         }
 
-        void DrawSelection()
+        void DrawSelection(bool updatePrefix)
         {
             fileGrid.Children.Clear();
             overlay.SetItems(null);
@@ -199,9 +160,9 @@ namespace sbx
                 return;
             }
 
-            if (trimPrefix)
+            if (updatePrefix && Options.trimPrefix)
             {
-                trimAmount = 0;
+                Options.trimAmount = 0;
                 var prefix = subdivs.FirstOrDefault().FirstOrDefault().ToString();
                 foreach (var part in subdivs)
                 {
@@ -219,11 +180,11 @@ namespace sbx
                     }
                 }
 
-                trimAmount = prefix.Length;
+                Options.trimAmount = prefix.Length;
             }
-            else
+            else if (updatePrefix)
             {
-                trimAmount = 0;
+                Options.trimAmount = 0;
             }
 
             overlay.SetItems(subdivs);
@@ -264,7 +225,7 @@ namespace sbx
 
         private void handleKey(HotKey key)
         {
-            FileInfo? result = null;
+            FileInfo result = null;
             switch (key)
             {
                 case HotKey.KP_7:
@@ -306,27 +267,27 @@ namespace sbx
                     break;
             }
 
-            if (result == null || result.Value.Reader == null) return;
+            if (result == null || result.Reader == null) return;
 
             try
             {
-                result.Value.Reader.Seek(0, SeekOrigin.Begin);
+                result.Reader.Seek(0, SeekOrigin.Begin);
                 audio.Stop();
                 audio.DeviceNumber = cbOutputDevice.SelectedIndex - 1;
-                var vsp = new VolumeSampleProvider(result.Value.Reader.ToSampleProvider())
+                var vsp = new VolumeSampleProvider(result.Reader.ToSampleProvider())
                 {
-                    Volume = volume
+                    Volume = Options.volume
                 };
                 audio.Init(vsp);
 
                 if (checkboxInput.IsChecked.Value)
                 {
-                    result.Value.Reader2.Seek(0, SeekOrigin.Begin);
+                    result.Reader2.Seek(0, SeekOrigin.Begin);
                     audioMonitor.Stop();
                     audioMonitor.DeviceNumber = cbMonitorDevice.SelectedIndex - 1;
-                    var vsp2 = new VolumeSampleProvider(result.Value.Reader2.ToSampleProvider())
+                    var vsp2 = new VolumeSampleProvider(result.Reader2.ToSampleProvider())
                     {
-                        Volume = monitorVolume
+                        Volume = Options.monitorVolume
                     };
                     audioMonitor.Init(vsp2);
                     audioMonitor.Play();
@@ -349,8 +310,6 @@ namespace sbx
 
             HwndSource source = HwndSource.FromHwnd(hwnd);
             source.AddHook(new HwndSourceHook(WndProc));
-
-            Task.Run(() => overlay.Run());
 
             RegisterHotKey(hwnd, (int)HotKey.KP_1, 0, (int)VirtualKey.VK_NUMPAD1);
             RegisterHotKey(hwnd, (int)HotKey.KP_2, 0, (int)VirtualKey.VK_NUMPAD2);
@@ -385,10 +344,6 @@ namespace sbx
             ClearDirectory();
             Directory.CreateDirectory(tempDirectory);
 
-            using (var stream = d.OpenFile())
-            using (var archive = ArchiveFactory.Open(stream))
-                progress.Maximum = archive.Entries.Count();
-
             progress.Value = 0;
             progress.Visibility = Visibility.Visible;
 
@@ -412,6 +367,7 @@ namespace sbx
 
                         Application.Current.Dispatcher.Invoke(() =>
                         {
+                            progress.Maximum = archive.Entries.Count();
                             progress.Value++;
                             status.Content = Translate("Read {0} ({1}/{2})", entry.Key, progress.Value, progress.Maximum);
                         });
@@ -427,8 +383,8 @@ namespace sbx
 
         void ClearDirectory()
         {
+            fileSelector?.Dispose();
             fileSelector = null;
-            GC.Collect();
             Directory.Delete(tempDirectory, true);
         }
 
@@ -442,11 +398,11 @@ namespace sbx
 
             Task.Run(() =>
             {
-                var timer = new System.Diagnostics.Stopwatch();
+                var timer = new Stopwatch();
                 timer.Start();
 
                 var audioFiles = new List<FileInfo>();
-                var failed = new List<string>();
+                var failed = new List<Tuple<string, Exception>>();
 
                 var i = 0;
                 foreach (var f in files)
@@ -454,8 +410,8 @@ namespace sbx
                     Application.Current.Dispatcher.Invoke(() => status.Content = Translate("Loading {0} ({1}/{2})", f, progress.Value, progress.Maximum));
                     try
                     {
-                        var r = new AudioFileReader(f);
-                        var r2 = new AudioFileReader(f);
+                        var r = StreamFactory.Create(f);
+                        var r2 = StreamFactory.Create(f);
                         var fi = new FileInfo
                         {
                             Reader = r,
@@ -465,9 +421,9 @@ namespace sbx
                         };
                         audioFiles.Add(fi);
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        failed.Add(f);
+                        failed.Add(Tuple.Create(f, ex));
                     }
 
                     Application.Current.Dispatcher.Invoke(() =>
@@ -479,15 +435,18 @@ namespace sbx
                 fileSelector = new StableSelector<FileInfo>(audioFiles, 9);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    DrawSelection();
+                    DrawSelection(true);
 
                     status.Content = Translate("{0} files loaded in {1}s", audioFiles.Count, timer.Elapsed.TotalSeconds);
 
                     if (failed.Count > 0)
                     {
-                        var failedFiles = string.Join(",", failed.Select(f => Path.GetFileName(f)));
+                        var failedFiles = string.Join(",", failed.Select(f => Path.GetFileName(f.Item1)));
 
                         status.Content += Translate("; {0} files failed to load: {1}", failed.Count, failedFiles);
+
+                        var msg = string.Join("\n", failed.Select(f => $"{f.Item1}: {f.Item2.Message}"));
+                        MessageBox.Show(msg, "Error during load", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
 
                     progress.Visibility = Visibility.Collapsed;
@@ -497,18 +456,16 @@ namespace sbx
             });
         }
 
-        private void MainWindow1_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void MainWindow1_Closing(object sender, CancelEventArgs e)
         {
             ClearDirectory();
-            overlay.Dispose();
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            var o = new Options();
-            o.ShowDialog();
-
-            DrawSelection();
+            new Options().ShowDialog();
+            fileSelector.Unselect();
+            DrawSelection(true);
         }
 
         private void cbOutputDevice_SelectionChanged(object sender, SelectionChangedEventArgs e)

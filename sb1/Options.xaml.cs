@@ -19,42 +19,50 @@ namespace sbx
     /// </summary>
     public partial class Options : Window
     {
+
+        internal static int trimAmount = 0;
+        internal static bool trimPrefix = false;
+        internal static bool cyrillicFix = true;
+        internal static bool useTags = false;
+        internal static float volume = 1.0f;
+        internal static float monitorVolume = 1.0f;
+
         public Options()
         {
             InitializeComponent();
-            cbCyrillicFix.IsChecked = MainWindow.cyrillicFix;
-            cbCyrillicFix.IsEnabled = MainWindow.useTags;
-            cbUseIDv3Tags.IsChecked = MainWindow.useTags;
-            cbTrimPrefix.IsChecked = MainWindow.trimPrefix;
-            slVolume.Value = MainWindow.volume;
+            cbCyrillicFix.IsChecked = cyrillicFix;
+            cbCyrillicFix.IsEnabled = useTags;
+            cbUseIDv3Tags.IsChecked = useTags;
+            cbTrimPrefix.IsChecked = trimPrefix;
+            slVolume.Value = volume;
             slVolume.ValueChanged += Slider_ValueChanged;
-            slLoopbackVolume.Value = MainWindow.monitorVolume;
+            slLoopbackVolume.Value = monitorVolume;
             slLoopbackVolume.ValueChanged += SliderMonitor_ValueChanged;
         }
 
         private void cbUseIDv3Tags_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow.useTags = cbUseIDv3Tags.IsChecked.Value;
-            cbCyrillicFix.IsEnabled = MainWindow.useTags;
+            useTags = cbUseIDv3Tags.IsChecked.Value;
+            cbCyrillicFix.IsEnabled = useTags;
         }
 
         private void cbCyrillicFix_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow.cyrillicFix = cbCyrillicFix.IsChecked.Value;
+            cyrillicFix = cbCyrillicFix.IsChecked.Value;
         }
 
         private void cbTrimPrefix_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow.trimPrefix = cbTrimPrefix.IsChecked.Value;
+            trimPrefix = cbTrimPrefix.IsChecked.Value;
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            MainWindow.volume = (float)e.NewValue;
+            volume = (float)e.NewValue;
         }
         private void SliderMonitor_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            MainWindow.monitorVolume = (float)e.NewValue;
+            monitorVolume = (float)e.NewValue;
         }
     }
 }

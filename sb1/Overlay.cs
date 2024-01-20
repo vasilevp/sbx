@@ -16,7 +16,7 @@ namespace sbx
         Dictionary<string, Font> fonts = new Dictionary<string, Font>();
         Dictionary<string, IBrush> brushes = new Dictionary<string, IBrush>();
         int fontSize = 14;
-
+        
         int keypadsize = 1000;
 
         public bool IsVisible
@@ -38,7 +38,7 @@ namespace sbx
             {
                 FPS = 30,
                 IsTopmost = true,
-                IsVisible = true,
+                IsVisible = false,
                 Title = Translate("Overlay"),
             };
 
@@ -141,6 +141,8 @@ namespace sbx
                     Translate("overlayHelp")
                     );
             };
+
+            window.Create();
         }
 
         private void DrawLongText(Font f, int size, IBrush b, int x, int y, int maxWidth, int maxHeight, string text)
@@ -159,13 +161,6 @@ namespace sbx
             l.SetFontSize(size, new SharpDX.DirectWrite.TextRange(0, text.Length));
             var target = new SharpDX.Mathematics.Interop.RawVector2(Math.Max(x - l.Metrics.Width / 2, minx), Math.Max(y - l.Metrics.Height / 2, miny));
             gfx.GetRenderTarget().DrawTextLayout(target, l, b.Brush, SharpDX.Direct2D1.DrawTextOptions.Clip);
-        }
-
-        public void Run()
-        {
-            window.Create();
-            //WindowHelper.EnableBlurBehind(window.Handle);
-            window.Join();
         }
 
         public void SetItems(IEnumerable<IEnumerable<T>> items)
@@ -197,6 +192,7 @@ namespace sbx
 
         public void Dispose()
         {
+            window.Pause();
             window.Dispose();
             gfx.Dispose();
         }
