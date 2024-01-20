@@ -463,7 +463,7 @@ namespace sbx
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            new Options().ShowDialog();
+            new Options { Owner = this }.ShowDialog();
             fileSelector.Unselect();
             DrawSelection(true);
         }
@@ -494,6 +494,8 @@ namespace sbx
             });
 
             status.Content = Translate("Language changed");
+            btnLangRu.Visibility = Visibility.Collapsed;
+            btnLangEn.Visibility = Visibility.Visible;
         }
 
         private void btnLangEn_Click(object sender, RoutedEventArgs e)
@@ -504,6 +506,8 @@ namespace sbx
             });
 
             status.Content = Translate("Language changed");
+            btnLangEn.Visibility = Visibility.Collapsed;
+            btnLangRu.Visibility = Visibility.Visible;
         }
     }
 }

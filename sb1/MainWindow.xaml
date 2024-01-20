@@ -59,15 +59,22 @@
             <Label x:Name="status" Content="{DynamicResource Ready}" FontSize="12" Height="27"/>
         </StatusBar>
         <Button x:Name="ButtonOpenArchive" Content="{DynamicResource Load Archive}" HorizontalAlignment="Right" Margin="0,36,10,0" Grid.Row="2" VerticalAlignment="Top" Width="90" Height="20" Click="ButtonOpenArchive_Click"/>
-        <Menu Background="#FFF0F0F0">
-            <MenuItem Header="{DynamicResource Options}" Click="MenuItem_Click" Width="75"/>
-            <Button x:Name="btnLangRu" Padding="1,0,0,0" Foreground="{x:Null}" Background="{x:Null}" BorderBrush="{x:Null}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Style="{DynamicResource TransparentStyle}" Click="btnLangRu_Click">
+        <Grid Background="#FFF0F0F0" Grid.ColumnSpan="2" VerticalAlignment="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="{DynamicResource Options}" Click="MenuItem_Click" MinWidth="75" HorizontalAlignment="Left" HorizontalContentAlignment="Center" BorderThickness="0,0,0,0"/>
+            <Button x:Name="btnLangRu" Padding="0,0,0,0" Foreground="{x:Null}" Background="{x:Null}" BorderBrush="{x:Null}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Style="{DynamicResource TransparentStyle}" Click="btnLangRu_Click" Grid.Column="2" HorizontalAlignment="Center">
                 <Image emoji:Image.Source="🇷🇺"/>
             </Button>
-            <Button x:Name="btnLangEn" Padding="1,0,0,0" Foreground="{x:Null}" Background="{x:Null}" BorderBrush="{x:Null}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Style="{DynamicResource TransparentStyle}" Click="btnLangEn_Click">
+            <Button x:Name="btnLangEn" Padding="0,0,0,0" Foreground="{x:Null}" Background="{x:Null}" BorderBrush="{x:Null}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Style="{DynamicResource TransparentStyle}" Click="btnLangEn_Click" Grid.Column="1" HorizontalAlignment="Center" Visibility="Collapsed">
                 <Image emoji:Image.Source="🇬🇧"/>
             </Button>
-        </Menu>
+        </Grid>
         <ComboBox x:Name="cbMonitorDevice" Margin="28,37,105,0" Grid.Row="2" VerticalAlignment="Top" Height="20" SelectedIndex="0" SelectionChanged="cbOutputDevice_SelectionChanged" ToolTip="{DynamicResource Monitoring device}" IsEnabled="False"/>
         <CheckBox x:Name="checkboxInput" Content="" Margin="10,39,0,0" Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Left" Width="18" Click="checkboxInput_Click" ToolTip="{DynamicResource Monitoring}"/>
     </Grid>
