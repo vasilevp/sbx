@@ -10,7 +10,7 @@ namespace sbx
     {
         internal static string Translate(string key)
         {
-            return App.Current?.FindResource(key) as string;
+            return App.Current?.FindResource(key) as string ?? "NULL";
         }
 
         internal static string Translate(string key, params object?[] args)

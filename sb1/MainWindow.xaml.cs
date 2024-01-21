@@ -42,6 +42,8 @@ namespace sbx
         VK_ADD,
         VK_SEPARATOR,
         VK_SUBTRACT,
+        VK_DECIMAL,
+        VK_DIVIDE,
     };
 
     enum HotKey
@@ -58,6 +60,7 @@ namespace sbx
         KP_PLUS,
         KP_MINUS,
         KP_MULTIPLY,
+        KP_DIVIDE,
     };
 
     public partial class MainWindow : Window
@@ -268,6 +271,10 @@ namespace sbx
                 case HotKey.KP_MULTIPLY:
                     overlay.SwitchFontSize();
                     break;
+                case HotKey.KP_DIVIDE:
+                    fileSelector.Unselect();
+                    DrawSelection(false);
+                    break;
             }
 
             if (result == null || result.Reader == null) return;
@@ -326,6 +333,7 @@ namespace sbx
             RegisterHotKey(hwnd, (int)HotKey.KP_PLUS, 0, (int)VirtualKey.VK_ADD);
             RegisterHotKey(hwnd, (int)HotKey.KP_MINUS, 0, (int)VirtualKey.VK_SUBTRACT);
             RegisterHotKey(hwnd, (int)HotKey.KP_MULTIPLY, 0, (int)VirtualKey.VK_MULTIPLY);
+            RegisterHotKey(hwnd, (int)HotKey.KP_DIVIDE, 0, (int)VirtualKey.VK_DIVIDE);
         }
 
         private void ButtonOpenArchive_Click(object sender, RoutedEventArgs e)
@@ -471,6 +479,8 @@ namespace sbx
 
         private void MainWindow1_Closing(object sender, CancelEventArgs e)
         {
+            audio.Dispose();
+            audioMonitor.Dispose();
             ClearDirectory();
         }
 

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Controls;
 using static sbx.Translator;
 
 namespace sbx
@@ -16,6 +17,7 @@ namespace sbx
         Dictionary<string, Font> fonts = new Dictionary<string, Font>();
         Dictionary<string, IBrush> brushes = new Dictionary<string, IBrush>();
         int fontSize = 14;
+        Geometry grid = null;
 
         int keypadsize = 1000;
 
@@ -42,104 +44,11 @@ namespace sbx
                 Title = Translate("Overlay"),
             };
 
-            Geometry grid = null;
 
-            window.SetupGraphics += (sender, e) =>
-            {
-                fonts["consolas"] = gfx.CreateFont("Consolas", 14, true);
-                brushes["black"] = gfx.CreateSolidBrush(0, 0, 0);
-                brushes["blackTransparent"] = gfx.CreateSolidBrush(0, 0, 0, 0.5f);
-                brushes["green"] = gfx.CreateSolidBrush(0, 255, 0);
-                brushes["background"] = gfx.CreateSolidBrush(255, 255, 255, 0.35f);
-                brushes["helperText"] = gfx.CreateSolidBrush(0, 0, 0, 0.25f);
 
-                var gridBounds = new Rectangle(0, 0, keypadsize, keypadsize);
-                grid = gfx.CreateGeometry();
+            window.SetupGraphics += SetupGraphics;
+            window.DrawGraphics += DrawGraphics;
 
-                for (int x = (int)gridBounds.Left; x <= gridBounds.Right; x += (int)gridBounds.Width / 3)
-                {
-                    var line = new Line(x, gridBounds.Top, x, gridBounds.Bottom);
-                    grid.BeginFigure(line);
-                    grid.EndFigure(false);
-                }
-
-                for (int y = (int)gridBounds.Top; y <= gridBounds.Bottom; y += (int)gridBounds.Height / 3)
-                {
-                    var line = new Line(gridBounds.Left, y, gridBounds.Right, y);
-                    grid.BeginFigure(line);
-                    grid.EndFigure(false);
-                }
-
-                grid.Close();
-            };
-
-            window.DrawGraphics += (sender, e) =>
-            {
-                gfx.ClearScene();
-
-                gfx.DrawGeometry(grid, brushes["black"], 1.0f);
-                gfx.DrawBox2D(brushes["black"], brushes["background"], new Rectangle(0, 0, e.Graphics.Width, e.Graphics.Height), 1.0f);
-
-                var helpSize = gfx.Height / 3;
-                for (int i = 0; i < 9; i++)
-                {
-                    // draw transparent keypad number using index magic
-                    DrawTextCentered(
-                        fonts["consolas"],
-                        helpSize,
-                        brushes["helperText"],
-                        (2 - (i % 3)) * keypadsize / 3 + keypadsize / 6,  // i_h * cell_w + cell_w/2
-                        (i / 3) * keypadsize / 3 + keypadsize / 6,        // i_v * cell_h + cell_h/2
-                        int.MinValue,
-                        int.MinValue,
-                        (9 - i).ToString()
-                        );
-
-                    if (items.Count() <= i || items[i].Count() == 0)
-                    {
-                        DrawTextCentered(
-                            fonts["consolas"],
-                            14,
-                            brushes["blackTransparent"],
-                            i % 3 * keypadsize / 3 + keypadsize / 6,
-                            i / 3 * keypadsize / 3 + keypadsize / 6,
-                            i % 3 * keypadsize / 3,
-                            i / 3 * keypadsize / 3,
-                            Translate("(none)")
-                            );
-                        continue;
-                    }
-
-                    // then draw the text itself
-                    StringBuilder sb = new StringBuilder();
-                    foreach (var item in items[i])
-                    {
-                        sb.AppendLine(item?.ToString() ?? "NULL");
-                    }
-
-                    DrawLongText(
-                        fonts["consolas"],
-                        fontSize,
-                        brushes["black"],
-                        (i % 3 * keypadsize / 3) + 10,
-                        i / 3 * keypadsize / 3,
-                        keypadsize / 3 - 10,
-                        keypadsize / 3,
-                        sb.ToString()
-                        );
-                }
-
-                DrawTextCentered(
-                    fonts["consolas"],
-                    14,
-                    brushes["black"],
-                    keypadsize,
-                    0,
-                    keypadsize + 5,
-                    0,
-                    Translate("overlayHelp")
-                    );
-            };
 
             window.Create();
         }
@@ -194,6 +103,103 @@ namespace sbx
             window.Pause();
             window.Dispose();
             gfx.Dispose();
+        }
+
+        void SetupGraphics(object? sender, SetupGraphicsEventArgs _)
+        {
+            fonts["consolas"] = gfx.CreateFont("Consolas", 14, true);
+            brushes["black"] = gfx.CreateSolidBrush(0, 0, 0);
+            brushes["blackTransparent"] = gfx.CreateSolidBrush(0, 0, 0, 0.5f);
+            brushes["green"] = gfx.CreateSolidBrush(0, 255, 0);
+            brushes["background"] = gfx.CreateSolidBrush(255, 255, 255, 0.35f);
+            brushes["helperText"] = gfx.CreateSolidBrush(0, 0, 0, 0.25f);
+
+            var gridBounds = new Rectangle(0, 0, keypadsize, keypadsize);
+            grid = gfx.CreateGeometry();
+
+            for (int x = (int)gridBounds.Left; x <= gridBounds.Right; x += (int)gridBounds.Width / 3)
+            {
+                var line = new Line(x, gridBounds.Top, x, gridBounds.Bottom);
+                grid.BeginFigure(line);
+                grid.EndFigure(false);
+            }
+
+            for (int y = (int)gridBounds.Top; y <= gridBounds.Bottom; y += (int)gridBounds.Height / 3)
+            {
+                var line = new Line(gridBounds.Left, y, gridBounds.Right, y);
+                grid.BeginFigure(line);
+                grid.EndFigure(false);
+            }
+
+            grid.Close();
+        }
+
+        void DrawGraphics(object sender, DrawGraphicsEventArgs e)
+        {
+            gfx.ClearScene();
+
+            gfx.DrawGeometry(grid, brushes["black"], 1.0f);
+            gfx.DrawBox2D(brushes["black"], brushes["background"], new Rectangle(0, 0, e.Graphics.Width, e.Graphics.Height), 1.0f);
+
+            var helpSize = gfx.Height / 3;
+            for (int i = 0; i < 9; i++)
+            {
+                // draw transparent keypad number using index magic
+                DrawTextCentered(
+                    fonts["consolas"],
+                    helpSize,
+                    brushes["helperText"],
+                    (2 - (i % 3)) * keypadsize / 3 + keypadsize / 6,  // i_h * cell_w + cell_w/2
+                    (i / 3) * keypadsize / 3 + keypadsize / 6,        // i_v * cell_h + cell_h/2
+                    int.MinValue,
+                    int.MinValue,
+                    (9 - i).ToString()
+                    );
+
+                if (items.Count() <= i || items[i].Count() == 0)
+                {
+                    DrawTextCentered(
+                        fonts["consolas"],
+                        14,
+                        brushes["blackTransparent"],
+                        i % 3 * keypadsize / 3 + keypadsize / 6,
+                        i / 3 * keypadsize / 3 + keypadsize / 6,
+                        i % 3 * keypadsize / 3,
+                        i / 3 * keypadsize / 3,
+                        Translate("(none)")
+                        );
+                    continue;
+                }
+
+                // then draw the text itself
+                StringBuilder sb = new StringBuilder();
+                foreach (var item in items[i])
+                {
+                    sb.AppendLine(item?.ToString() ?? "NULL");
+                }
+
+                DrawLongText(
+                    fonts["consolas"],
+                    fontSize,
+                    brushes["black"],
+                    (i % 3 * keypadsize / 3) + 10,
+                    i / 3 * keypadsize / 3,
+                    keypadsize / 3 - 10,
+                    keypadsize / 3,
+                    sb.ToString()
+                    );
+            }
+
+            DrawTextCentered(
+                fonts["consolas"],
+                14,
+                brushes["black"],
+                keypadsize,
+                0,
+                keypadsize + 5,
+                0,
+                Translate("overlayHelp")
+                );
         }
     }
 }
