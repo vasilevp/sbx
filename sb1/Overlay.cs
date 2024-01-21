@@ -95,7 +95,6 @@ namespace sbx
                         (9 - i).ToString()
                         );
 
-
                     if (items.Count() <= i || items[i].Count() == 0)
                     {
                         DrawTextCentered(

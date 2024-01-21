@@ -26,7 +26,7 @@ namespace sbx
         public override string ToString()
         {
             var fname = Path.GetFileNameWithoutExtension(FileName);
-            if (!Options.useTags)
+            if (!Options.useTags || TagName == null)
             {
                 return process(fname);
             }
