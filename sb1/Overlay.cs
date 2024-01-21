@@ -21,12 +21,18 @@ namespace sbx
 
         int keypadsize = 1000;
 
+        /// <summary>
+        /// Gets or sets a Boolean indicating whether this window is visible.
+        /// </summary>
         public bool IsVisible
         {
             get => window.IsVisible;
             set => window.IsVisible = value;
         }
 
+        /// <summary>
+        /// Initializes a new Overlay window.
+        /// </summary>
         public Overlay()
         {
             gfx = new Graphics()
@@ -71,11 +77,17 @@ namespace sbx
             gfx.GetRenderTarget().DrawTextLayout(target, l, b.Brush, SharpDX.Direct2D1.DrawTextOptions.Clip);
         }
 
+        /// <summary>
+        /// Set items to display in the Overlay.
+        /// </summary>
         public void SetItems(IEnumerable<IEnumerable<T>> items)
         {
             this.items = items?.ToList() ?? new List<IEnumerable<T>>();
         }
 
+        /// <summary>
+        /// Switch between supported font sizes.
+        /// </summary>
         public void SwitchFontSize()
         {
             switch (fontSize)
@@ -98,6 +110,9 @@ namespace sbx
             }
         }
 
+        /// <summary>
+        /// Releases all resources used by the Overlay.
+        /// </summary>
         public void Dispose()
         {
             window.Pause();

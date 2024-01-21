@@ -22,7 +22,7 @@ namespace sbx
 
         internal static int trimAmount = 0;
         internal static bool trimPrefix = false;
-        internal static bool cyrillicFix = true;
+        internal static bool cyrillicFix = false;
         internal static bool useTags = false;
         internal static float volume = 1.0f;
         internal static float monitorVolume = 1.0f;
@@ -34,8 +34,10 @@ namespace sbx
             cbCyrillicFix.IsEnabled = useTags;
             cbUseIDv3Tags.IsChecked = useTags;
             cbTrimPrefix.IsChecked = trimPrefix;
+
             slVolume.Value = volume;
             slVolume.ValueChanged += Slider_ValueChanged;
+
             slLoopbackVolume.Value = monitorVolume;
             slLoopbackVolume.ValueChanged += SliderMonitor_ValueChanged;
         }

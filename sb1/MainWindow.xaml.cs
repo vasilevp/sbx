@@ -22,10 +22,8 @@ using static sbx.Translator;
 namespace sbx
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// VirtualKey is the key code used to read keyboard events.
     /// </summary>
-    /// 
-
     enum VirtualKey
     {
         VK_NUMPAD0 = 0x60,
@@ -46,6 +44,9 @@ namespace sbx
         VK_DIVIDE,
     };
 
+    /// <summary>
+    /// HotKey is the internal hotkey ID.
+    /// </summary>
     enum HotKey
     {
         KP_1,
@@ -140,9 +141,9 @@ namespace sbx
                 if (subdiv == null)
                     return null;
 
-                if (subdiv.Count() > 9)
+                if (subdiv.Count() > 1)
                 {
-                    throw new Exception($"subdivision longer than 9 ({subdiv.Count()})");
+                    throw new Exception($"subdivision longer than 1 ({subdiv.Count()})");
                 }
 
                 fileSelector.Unselect();
@@ -217,12 +218,13 @@ namespace sbx
             }
         }
 
-
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
+            const int WM_HOTKEY = 0x0312;
+
             switch (msg)
             {
-                case 0x0312:
+                case WM_HOTKEY:
                     handleKey((HotKey)wParam.ToInt32());
                     break;
             }
