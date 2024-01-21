@@ -24,7 +24,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <UseWindowsForms>False</UseWindowsForms>
     <UseWPF>True</UseWPF>
-    <VersionPrefix>0.3.2</VersionPrefix>
+    <VersionPrefix>0.4.0</VersionPrefix>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
