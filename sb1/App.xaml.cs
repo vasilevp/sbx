@@ -12,8 +12,7 @@ namespace sbx
             this.DispatcherUnhandledException += (sender, e) =>
             {
                 MessageBox.Show(e.Exception.Message + $"\n{e.Exception.StackTrace}", $"Unhandled {e.GetType().Name}");
-
-                e.Handled = true;
+                e.Handled = !System.Diagnostics.Debugger.IsAttached;
             };
         }
     }

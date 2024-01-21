@@ -16,7 +16,7 @@ namespace sbx
         Dictionary<string, Font> fonts = new Dictionary<string, Font>();
         Dictionary<string, IBrush> brushes = new Dictionary<string, IBrush>();
         int fontSize = 14;
-        
+
         int keypadsize = 1000;
 
         public bool IsVisible
@@ -33,7 +33,7 @@ namespace sbx
                 PerPrimitiveAntiAliasing = true,
                 TextAntiAliasing = true
             };
-            
+
             window = new GraphicsWindow(0, 0, keypadsize * 5 / 4, keypadsize, gfx)
             {
                 FPS = 30,
@@ -115,7 +115,7 @@ namespace sbx
                     StringBuilder sb = new StringBuilder();
                     foreach (var item in items[i])
                     {
-                        sb.AppendLine(item.ToString());
+                        sb.AppendLine(item?.ToString() ?? "NULL");
                     }
 
                     DrawLongText(
@@ -165,7 +165,7 @@ namespace sbx
 
         public void SetItems(IEnumerable<IEnumerable<T>> items)
         {
-            this.items = items?.ToList();
+            this.items = items?.ToList() ?? new List<IEnumerable<T>>();
         }
 
         public void SwitchFontSize()

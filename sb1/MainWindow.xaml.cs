@@ -123,6 +123,9 @@ namespace sbx
                 return;
             }
 
+            ClearDirectory();
+            Directory.CreateDirectory(tempDirectory);
+
             LoadDirectory(d.SelectedPath);
         }
 
@@ -416,9 +419,19 @@ namespace sbx
                         {
                             Reader = r,
                             Reader2 = r2,
-                            Tag = TagLib.File.Create(f).Tag,
                             FileName = f,
                         };
+
+                        // ignore taglib errors because we don't care
+                        try
+                        {
+                            fi.TagName = TagLib.File.Create(f).Tag.Title;
+                        }
+                        catch
+                        {
+                            fi.TagName = fi.FileName;
+                        }
+
                         audioFiles.Add(fi);
                     }
                     catch (Exception ex)

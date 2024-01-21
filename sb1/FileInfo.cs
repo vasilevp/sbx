@@ -9,7 +9,7 @@ namespace sbx
     {
         public WaveStream Reader;
         public WaveStream Reader2;
-        public TagLib.Tag Tag;
+        public string TagName;
         public string FileName;
 
         private static readonly Encoding enc1251 = Encoding.GetEncoding(1251);
@@ -17,6 +17,7 @@ namespace sbx
 
         private static string process(string s)
         {
+            if (s == null) { return "NULL"; }
             if (Options.trimAmount >= s.Length) return s.Trim();
 
             return s[Options.trimAmount..].Trim();
@@ -25,17 +26,17 @@ namespace sbx
         public override string ToString()
         {
             var fname = Path.GetFileNameWithoutExtension(FileName);
-            if (Tag.Title == null || !Options.useTags)
+            if (!Options.useTags)
             {
                 return process(fname);
             }
 
             if (!Options.cyrillicFix)
             {
-                return process(Tag.Title);
+                return process(TagName);
             }
 
-            return process(enc1251.GetString(enc1252.GetBytes(Tag.Title)));
+            return process(enc1251.GetString(enc1252.GetBytes(TagName)));
         }
 
         public void Dispose()
