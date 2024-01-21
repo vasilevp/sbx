@@ -26,6 +26,9 @@
     <system:String x:Key="Output volume">Громкость звука</system:String>
     <system:String x:Key="Monitor volume">Громкость прослушивания</system:String>
 
+    <system:String x:Key="Archives|*.7z;*.zip;*.rar|All files|*.*">Архивы|*.7z;*.zip;*.rar|Все файлы|*.*</system:String>
+    <system:String x:Key="Error during load">Ошибка при загрузке</system:String>
+
     <system:String x:Key="Overlay">Оверлей</system:String>
     <system:String x:Key="(none)">(пусто)</system:String>
     <system:String x:Key="overlayHelp" xml:space="preserve">Горячие клавиши:

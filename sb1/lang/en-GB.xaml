@@ -26,6 +26,9 @@
     <system:String x:Key="Output volume">Output volume</system:String>
     <system:String x:Key="Monitor volume">Monitor volume</system:String>
 
+    <system:String x:Key="Archives|*.7z;*.zip;*.rar|All files|*.*">Archives|*.7z;*.zip;*.rar|All files|*.*</system:String>
+    <system:String x:Key="Error during load">Error during load</system:String>
+
     <system:String x:Key="Overlay">Overlay</system:String>
     <system:String x:Key="(none)">(none)</system:String>
     <system:String x:Key="overlayHelp" xml:space="preserve">Hotkeys:

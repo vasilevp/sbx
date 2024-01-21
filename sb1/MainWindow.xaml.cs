@@ -1,77 +1,25 @@
-﻿using NAudio.Wave;
+﻿using NAudio.CoreAudioApi;
+using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using Ookii.Dialogs.Wpf;
+using SharpCompress.Archives;
+using SharpCompress.Common;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
-using System.Windows;
 using System.Linq;
-using System.Windows.Controls;
 using System.Text;
 using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-using System;
-using System.Windows.Interop;
-using SharpCompress.Common;
-using SharpCompress.Archives;
-using NAudio.CoreAudioApi;
-using NAudio.Wave.SampleProviders;
-
+using System.Windows;
+using System.Windows.Controls;
 using static sbx.Translator;
 
 namespace sbx
 {
-    /// <summary>
-    /// VirtualKey is the key code used to read keyboard events.
-    /// </summary>
-    enum VirtualKey
-    {
-        VK_NUMPAD0 = 0x60,
-        VK_NUMPAD1,
-        VK_NUMPAD2,
-        VK_NUMPAD3,
-        VK_NUMPAD4,
-        VK_NUMPAD5,
-        VK_NUMPAD6,
-        VK_NUMPAD7,
-        VK_NUMPAD8,
-        VK_NUMPAD9,
-        VK_MULTIPLY,
-        VK_ADD,
-        VK_SEPARATOR,
-        VK_SUBTRACT,
-        VK_DECIMAL,
-        VK_DIVIDE,
-    };
-
-    /// <summary>
-    /// HotKey is the internal hotkey ID.
-    /// </summary>
-    enum HotKey
-    {
-        KP_1,
-        KP_2,
-        KP_3,
-        KP_4,
-        KP_5,
-        KP_6,
-        KP_7,
-        KP_8,
-        KP_9,
-        KP_PLUS,
-        KP_MINUS,
-        KP_MULTIPLY,
-        KP_DIVIDE,
-    };
-
     public partial class MainWindow : Window
     {
-        [DllImport("user32.dll")]
-        public static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifers, int vlc);
-
-        [DllImport("user32.dll")]
-        public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
-
         StableSelector<FileInfo> fileSelector = new(null, 9);
 
         Overlay<FileInfo> overlay = new();
@@ -218,20 +166,7 @@ namespace sbx
             }
         }
 
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            const int WM_HOTKEY = 0x0312;
-
-            switch (msg)
-            {
-                case WM_HOTKEY:
-                    handleKey((HotKey)wParam.ToInt32());
-                    break;
-            }
-            return IntPtr.Zero;
-        }
-
-        private void handleKey(HotKey key)
+        private void handleKeypad(HotKey key)
         {
             FileInfo result = null;
             switch (key)
@@ -262,20 +197,6 @@ namespace sbx
                     break;
                 case HotKey.KP_3:
                     result = SelectSubset(8);
-                    break;
-                case HotKey.KP_MINUS:
-                    audio.Stop();
-                    audioMonitor.Stop();
-                    break;
-                case HotKey.KP_PLUS:
-                    overlay.IsVisible = !overlay.IsVisible;
-                    break;
-                case HotKey.KP_MULTIPLY:
-                    overlay.SwitchFontSize();
-                    break;
-                case HotKey.KP_DIVIDE:
-                    fileSelector.Unselect();
-                    DrawSelection(false);
                     break;
             }
 
@@ -317,26 +238,32 @@ namespace sbx
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            var hotkeys = new Hotkeys(this);
+            for (var i = HotKey.KP_1; i <= HotKey.KP_9; i++)
+            {
+                hotkeys.Register(i, handleKeypad);
+            }
 
-            var hwnd = new WindowInteropHelper(this).Handle;
+            hotkeys.Register(HotKey.KP_MINUS, () =>
+            {
+                audio.Stop();
+                audioMonitor.Stop();
+            });
 
-            HwndSource source = HwndSource.FromHwnd(hwnd);
-            source.AddHook(new HwndSourceHook(WndProc));
+            hotkeys.Register(HotKey.KP_PLUS, () =>
+            {
+                overlay.IsVisible = !overlay.IsVisible;
+            });
 
-            RegisterHotKey(hwnd, (int)HotKey.KP_1, 0, (int)VirtualKey.VK_NUMPAD1);
-            RegisterHotKey(hwnd, (int)HotKey.KP_2, 0, (int)VirtualKey.VK_NUMPAD2);
-            RegisterHotKey(hwnd, (int)HotKey.KP_3, 0, (int)VirtualKey.VK_NUMPAD3);
-            RegisterHotKey(hwnd, (int)HotKey.KP_4, 0, (int)VirtualKey.VK_NUMPAD4);
-            RegisterHotKey(hwnd, (int)HotKey.KP_5, 0, (int)VirtualKey.VK_NUMPAD5);
-            RegisterHotKey(hwnd, (int)HotKey.KP_6, 0, (int)VirtualKey.VK_NUMPAD6);
-            RegisterHotKey(hwnd, (int)HotKey.KP_7, 0, (int)VirtualKey.VK_NUMPAD7);
-            RegisterHotKey(hwnd, (int)HotKey.KP_8, 0, (int)VirtualKey.VK_NUMPAD8);
-            RegisterHotKey(hwnd, (int)HotKey.KP_9, 0, (int)VirtualKey.VK_NUMPAD9);
-            RegisterHotKey(hwnd, (int)HotKey.KP_PLUS, 0, (int)VirtualKey.VK_ADD);
-            RegisterHotKey(hwnd, (int)HotKey.KP_MINUS, 0, (int)VirtualKey.VK_SUBTRACT);
-            RegisterHotKey(hwnd, (int)HotKey.KP_MULTIPLY, 0, (int)VirtualKey.VK_MULTIPLY);
-            RegisterHotKey(hwnd, (int)HotKey.KP_DIVIDE, 0, (int)VirtualKey.VK_DIVIDE);
+            hotkeys.Register(HotKey.KP_MULTIPLY, overlay.SwitchFontSize);
+
+            hotkeys.Register(HotKey.KP_DIVIDE, () =>
+            {
+                fileSelector.Unselect();
+                DrawSelection(false);
+            });
         }
+
 
         private void ButtonOpenArchive_Click(object sender, RoutedEventArgs e)
         {
@@ -345,7 +272,7 @@ namespace sbx
 
             var d = new VistaOpenFileDialog
             {
-                Filter = "Archives|*.7z;*.zip;*.rar|All files|*.*"
+                Filter = Translate("Archives|*.7z;*.zip;*.rar|All files|*.*")
             };
             if (!d.ShowDialog(this) ?? true)
             {
@@ -469,7 +396,7 @@ namespace sbx
                         status.Content += Translate("; {0} files failed to load: {1}", failed.Count, failedFiles);
 
                         var msg = string.Join("\n", failed.Select(f => $"{f.Item1}: {f.Item2.Message}"));
-                        MessageBox.Show(msg, "Error during load", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(msg, Translate("Error during load"), MessageBoxButton.OK, MessageBoxImage.Error);
                     }
 
                     progress.Visibility = Visibility.Collapsed;
