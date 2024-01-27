@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows.Controls;
+using System.Threading;
 using static sbx.Translator;
 
 namespace sbx
@@ -13,13 +13,15 @@ namespace sbx
     {
         GraphicsWindow window;
         Graphics gfx;
-        IList<IEnumerable<T>> items = new List<IEnumerable<T>>();
-        Dictionary<string, Font> fonts = new Dictionary<string, Font>();
-        Dictionary<string, IBrush> brushes = new Dictionary<string, IBrush>();
+        Dictionary<string, Font> fonts = new();
+        Dictionary<string, IBrush> brushes = new();
         int fontSize = 14;
         Geometry grid = null;
 
         int keypadsize = 1000;
+
+        ReaderWriterLock rwl = new();
+        IList<IEnumerable<T>> items = new List<IEnumerable<T>>();
 
         /// <summary>
         /// Gets or sets a Boolean indicating whether this window is visible.
@@ -61,9 +63,11 @@ namespace sbx
 
         private void DrawLongText(Font f, int size, IBrush b, int x, int y, int maxWidth, int maxHeight, string text)
         {
-            var l = new SharpDX.DirectWrite.TextLayout(gfx.GetFontFactory(), text, f.TextFormat, gfx.Width, gfx.Height);
-            l.MaxWidth = maxWidth;
-            l.MaxHeight = maxHeight;
+            var l = new SharpDX.DirectWrite.TextLayout(gfx.GetFontFactory(), text, f.TextFormat, gfx.Width, gfx.Height)
+            {
+                MaxWidth = maxWidth,
+                MaxHeight = maxHeight
+            };
             l.SetFontSize(size, new SharpDX.DirectWrite.TextRange(0, text.Length));
             var target = new SharpDX.Mathematics.Interop.RawVector2(x, y);
             gfx.GetRenderTarget().DrawTextLayout(target, l, b.Brush, SharpDX.Direct2D1.DrawTextOptions.Clip);
@@ -82,7 +86,9 @@ namespace sbx
         /// </summary>
         public void SetItems(IEnumerable<IEnumerable<T>> items)
         {
+            rwl.AcquireWriterLock(1000);
             this.items = items?.ToList() ?? new List<IEnumerable<T>>();
+            rwl.ReleaseWriterLock();
         }
 
         /// <summary>
@@ -120,7 +126,7 @@ namespace sbx
             gfx.Dispose();
         }
 
-        void SetupGraphics(object? sender, SetupGraphicsEventArgs _)
+        void SetupGraphics(object sender, SetupGraphicsEventArgs _)
         {
             fonts["consolas"] = gfx.CreateFont("Consolas", 14, true);
             brushes["black"] = gfx.CreateSolidBrush(0, 0, 0);
@@ -151,6 +157,7 @@ namespace sbx
 
         void DrawGraphics(object sender, DrawGraphicsEventArgs e)
         {
+            rwl.AcquireReaderLock(1000);
             gfx.ClearScene();
 
             gfx.DrawGeometry(grid, brushes["black"], 1.0f);
@@ -171,7 +178,7 @@ namespace sbx
                     (9 - i).ToString()
                     );
 
-                if (items.Count() <= i || items[i].Count() == 0)
+                if (items.Count <= i || !items[i].Any())
                 {
                     DrawTextCentered(
                         fonts["consolas"],
@@ -187,7 +194,7 @@ namespace sbx
                 }
 
                 // then draw the text itself
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
                 foreach (var item in items[i])
                 {
                     sb.AppendLine(item?.ToString() ?? "NULL");
@@ -215,6 +222,8 @@ namespace sbx
                 0,
                 Translate("overlayHelp")
                 );
+
+            rwl.ReleaseReaderLock();
         }
     }
 }

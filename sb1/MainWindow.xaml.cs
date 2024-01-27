@@ -43,7 +43,7 @@ namespace sbx
             Directory.CreateDirectory(tempDirectory);
         }
 
-        IEnumerable<string> PlaybackDevices()
+        static IEnumerable<string> PlaybackDevices()
         {
             // get proper device names because NAudio is kinda dumb
             var devices = new MMDeviceEnumerator().

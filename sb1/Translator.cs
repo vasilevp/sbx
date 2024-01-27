@@ -18,7 +18,7 @@
         /// <param name="key">Key to look for. Can be any valid string.</param>
         /// <param name="args">Formatting arguments</param>
         /// <returns></returns>
-        internal static string Translate(string key, params object?[] args)
+        internal static string Translate(string key, params object[] args)
         {
             return string.Format(Translate(key), args);
         }
